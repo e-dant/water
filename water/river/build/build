@@ -3,16 +3,29 @@
 lastdir="$PWD"
 cd "$(dirname "$0")"
 thisdir="$PWD"
+retval=0
 
 CC="$PWD/../../../tools/compilers/llvm/build/out/bin/clang"
 CXX="$PWD/../../../tools/compilers/llvm/build/out/bin/clang++"
 
-cmake \
-  -D CMAKE_C_COMPILER="$CC" \
-  -D CMAKE_CXX_COMPILER="$CXX" \
-  -S 'in' -B 'out' -G 'Ninja' -Wno-dev \
-  && cmake --build out --config Release
-retval=$?
+cc::init() {
+  $CC -v || {
+    git submodule update --init --recursive;
+    "$PWD/../../../tools/compilers/llvm/build/build";
+  }
+}
+
+cmake::build() {
+  cmake \
+    -D CMAKE_C_COMPILER="$CC" \
+    -D CMAKE_CXX_COMPILER="$CXX" \
+    -S 'in' -B 'out' -G 'Ninja' -Wno-dev \
+    && cmake --build out --config Release
+  retval=$?
+}
+
+cc::init
+cmake::build
 
 cd "$lastdir"
 exit $retval

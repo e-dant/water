@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-tell::known() {
-  local tell_always=(
+tell_always=(
     'all'
     'depth'
     'help'
@@ -10,7 +9,10 @@ tell::known() {
     'root'
     'shfn'
     'where'
+    'workspace'
   )
+
+tell::known() {
   for known_always in ${tell_always[@]}; do
     echo $known_always
   done
@@ -23,16 +25,6 @@ tell::known() {
 
 tell::is_known() {
   local command="$1"
-  local tell_always=(
-    'all'
-    'depth'
-    'help'
-    'known'
-    'readme'
-    'root'
-    'shfn'
-    'where'
-  )
   for known_always in ${tell_always[@]}; do
     test "$known_always" = "$command" \
       && return 0
@@ -49,16 +41,6 @@ tell::is_known() {
 
 tell::is_known_always() {
   local command="$1"
-  local tell_always=(
-    'all'
-    'depth'
-    'help'
-    'known'
-    'readme'
-    'root'
-    'shfn'
-    'where'
-  )
   for aknown in ${tell_always[@]}; do
     test "$aknown" = "$command" \
       && return 0

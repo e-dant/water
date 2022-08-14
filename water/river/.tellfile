@@ -2,5 +2,5 @@
 echo river
 - given build
 echo build/build
-- given binary
-echo build/out/`tell::workspace`.`tell name`
+- given exe
+echo build/out/`tell workspace`.`tell name`
