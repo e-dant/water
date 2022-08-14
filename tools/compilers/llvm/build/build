@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+cd $(dirname $0)
+
+thisdir="$PWD"
+outdir="$thisdir/out"
+srcdir="$thisdir/../src/llvm"
+exitval=0
+
+cd $outdir || exit 1
+
+if cmake -DLLVM_ENABLE_PROJECTS=clang -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" $srcdir; then
+  if make; then
+    exit 0
+  else
+    echo make failed
+    exitval=$((exitval + 1))
+  fi
+else
+  echo cmake failed
+  exitval=$((exitval + 1))
+fi
+
+cd $thisdir
+exit $exitval

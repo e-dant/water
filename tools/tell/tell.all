@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+tell::all() {
+  printf '%s\n\n' '[tell all]'
+  while read known; do
+    if test "$known" != 'known' -a "$known" != 'all'; then
+      echo "- given $known"
+      eval "tell $known"
+      echo
+    fi
+  done <<< $(tell::known)
+}

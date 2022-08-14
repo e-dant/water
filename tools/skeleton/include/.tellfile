@@ -1,0 +1,5 @@
+- given name
+echo {{skeleton.tell.name}} include
+- given build
+echo ../build/build
+

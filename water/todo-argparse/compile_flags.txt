@@ -1,0 +1,4 @@
+-std=c++2a
+-O3
+-fPIC
+-flto=full

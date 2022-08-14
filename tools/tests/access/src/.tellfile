@@ -1,0 +1,5 @@
+- given name
+echo access tests source
+- given build
+test -f ../build/.tell && echo "../build/$(cd ../build; tell build; cd ../src;)"
+

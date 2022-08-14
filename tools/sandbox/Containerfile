@@ -1,0 +1,6 @@
+FROM ubuntu:22.04
+RUN apt-get update -y -qq && apt-get install -y -qq curl ca-certificates init systemd iptables podman qemu
+CMD [ "/sbin/init" ]
+COPY . /import
+RUN sh -c "echo root:box|chpasswd"
+RUN cat /etc/passwd|sed -E "s|(^root\:)(x\:0\:0\:root\:).*|\1\2/\:/bin/bash|g"|tee /etc/passwd

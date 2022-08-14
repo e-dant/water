@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+tell::whereistell() {
+  local where="$(\
+    cd -- \
+    "$(dirname "$0")" >/dev/null 2>&1; \
+    pwd -P)"
+  echo $where
+}

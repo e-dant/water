@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+tell::root() {
+  if ! test -f '.tellfile'; then
+    echo '\ : no tell'
+    return 1
+  else
+    local depth=$(tell::depth)
+    if test $depth -eq 0; then
+      echo '.'
+    else
+      for level in $(seq 1 $depth); do
+        echo -n '../'
+      done
+      echo
+    fi
+  fi
+}

@@ -1,0 +1,6 @@
+*
+!.gitignore
+!.tell*
+!README.*
+!CMakeLists.txt
+

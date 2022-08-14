@@ -1,0 +1,3 @@
+- given name
+echo {{skeleton.tell.name}} mustache-like template map
+

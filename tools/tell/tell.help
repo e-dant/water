@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+tell::help() {
+  echo '# tell'
+  echo
+  echo '## summary'
+  echo
+  echo ' give useful information in context.'
+  echo
+  echo '## usage'
+  echo
+  echo '````'
+  echo ' tell <property> [ : <options>]'
+  echo '````'
+  echo
+  echo '## properties'
+  echo
+  echo '````'
+  for known in $(tell::known); do
+    echo -n " $known"
+  done
+  echo
+  echo '````'
+  echo
+  echo '## options'
+  echo
+  echo ' depends.'
+  echo ' these are usually paths to directories'
+  echo ' that contain a `.tellfile`. in those'
+  echo ' cases, the tell property cascades down'
+  echo ' the path in `<option for each options>`,'
+  echo ' eventually printing something relevant.'
+}

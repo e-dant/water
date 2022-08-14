@@ -1,0 +1,5 @@
+- given name
+echo common tests
+- given build
+echo `tell::__build_tellargs`
+

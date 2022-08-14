@@ -1,0 +1,5 @@
+- given name
+echo gcc compiler collection
+- given build
+echo build/in/build.sh
+

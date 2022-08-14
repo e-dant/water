@@ -1,0 +1,5 @@
+- given name
+echo {{skeleton.tell.name}} tools directory
+- given build
+echo ../build/build
+

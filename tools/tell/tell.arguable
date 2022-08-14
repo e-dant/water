@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+tell::arguable() {
+  local tellcommand=$(\
+    cat '.tellfile' \
+    | sed -En "/^- given $1.*$/{n;p;}")
+  tell::__export_tellargs $@
+  eval $tellcommand \
+    || tell::known
+  return $?
+}

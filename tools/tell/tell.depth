@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+tell::depth() {
+  local where_dir="$(tell where)"
+  local only_slashes="${where_dir//[^,\/]}"
+  local slash_count=$(perl -nle 'print s/\///g' <<< "$only_slashes")
+  test -z $slash_count && slash_count=0
+  echo $slash_count
+}

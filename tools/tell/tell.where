@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+tell::where() {
+  test -n "$1" -a -d "$1" \
+    && cd "$1"
+  test -z "$__tell_where_from" \
+    && __tell_where_from="$PWD"
+  test -z ${__tell_where_dirstack} \
+    && __tell_where_dirstack=()
+
+  if ! test -f '.tellfile'; then
+    echo '\ : no tellfile'
+    return 1
+  elif test "$(tell special)" = 'root'; then
+    __tell_where_dirstack+='root/'
+  else
+    local lastdir="$PWD"
+    cd .. && {
+      tell::where
+      cd "$lastdir"
+      __tell_where_dirstack+="${lastdir##*/}/"
+    }
+  fi
+
+  test "$PWD" = "$__tell_where_from" \
+    && echo "${__tell_where_dirstack[*]%*/}"
+}

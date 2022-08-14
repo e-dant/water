@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+cd $(dirname $0)
+
+thisdir="$PWD"
+outdir="$thisdir/out"
+srcdir="$thisdir/../src"
+exitval=0
+
+cd $outdir || exit 1
+
+options='--enable-libstdcxx-allocator=__mt_alloc --enable-valgrind-annotations'
+
+if cd $srcdir; contrib/download_prerequisites; cd $outdir; then
+  if $srcdir/configure; then
+    if make; then
+      exit 0
+    else
+      echo make failed
+      exitval=$((exitval + 1))
+    fi
+  else
+    echo configure failed
+    exitval=$((exitval + 1))
+  fi
+else
+  echo prerequisites failed
+  exitval=$((exitval + 1))
+fi
+
+cd $thisdir
+exit $exitval

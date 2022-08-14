@@ -1,0 +1,1 @@
+{{skeleton.build.in.cmake}}

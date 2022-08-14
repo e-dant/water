@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+# directories
+LASTDIR="$PWD"
+cd "$(dirname "$0")"
+THISDIR="$PWD"
+cd ../src
+
+# setup
+git submodule update --init
+cabal update
+
+# prerequisites
+get::prerequisites() {
+  for prereq in $@; do
+    if ! which "$prereq" &>/dev/null; then
+      cabal install "$prereq"
+      if ! which "$prereq" &>/dev/null; then
+        PATH="$HOME/.cabal/bin:$PATH"
+      fi
+    fi
+  done
+}
+get::lib_prerequisites() {
+  for prereq in $@; do
+    if ! which "$prereq" &>/dev/null; then
+      cabal install --lib "$prereq"
+    fi
+  done
+}
+
+# build
+ghc::build() {
+  ./boot || exit 1
+  CC="$PWD/../../llvm/build/out/bin/clang" \
+  CXX="$PWD/../../llvm/build/out/bin/clang++" \
+  LDFLAGS="-L$PWD/../../llvm/build/out/lib -L/usr/lib" \
+  ./configure \
+    || { cat config.log; exit 1; }
+  make -j7 || exit 1
+}
+
+get::prerequisites happy alex haddock
+get::lib_prerequisites base
+
+ghc::build
+
+# done
+cd "$LASTDIR"

@@ -1,0 +1,5 @@
+- given name
+echo compiler collections
+- given build
+tell::__build_maybe_tellargs gcc ghc llvm
+

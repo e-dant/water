@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+lastdir="$PWD"
+cd "$(dirname "$0")"
+
+source 'tell.all'
+source 'tell.arguable'
+source 'tell.depth'
+source 'tell.help'
+source 'tell.known'
+source 'tell.readme'
+source 'tell.root'
+source 'tell.shfn'
+source 'tell.tellargs'
+source 'tell.where'
+source 'tell.whereistell'
+source 'tell.workspace'
+
+cd "$lastdir"
+
+tell() {
+  # no arguments
+  if test $# -lt 1; then
+    tell::help
+    echo '---'
+    tell::known
+    echo '---'
+    echo "tell requires arguments"
+    return 1
+  fi
+
+  lastdir="$PWD"
+  primary_input="$1"
+
+  # path in argument
+  if echo "$primary_input" | grep -q '/'; then
+    # go to the path input to the command,
+    # example:
+    # tell water/river/build/readme
+    #   -> cd water/river/build
+    #   => tell readme
+    cd "${primary_input%%/*}"
+    command_input="${primary_input##*/}"
+  else
+    command_input="$primary_input"
+  fi
+
+  all_input=($command_input ${@:2})
+
+  # try just one argument if known
+  if tell::is_known_always "$command_input"; then
+    tell::$command_input
+    cd "$lastdir"
+    return $?
+  # more than one argument or
+  # arguments only known to pwd/.tellfile
+  else
+    if tell::is_known_here "$command_input"; then
+      tell::arguable ${all_input[@]}
+      cd "$lastdir"
+      return $?
+    else
+      echo "argument is unknown: $@"
+      cd "$lastdir"
+      return 1
+    fi
+  fi
+}
+
+tell $@
+exit $?

@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+tell::__export_tellargs() {
+  test -z "${tellargs[*]}" \
+    && tellargs=()
+  tellargs+=$(\
+    echo $@ \
+    | sed -n 's/.*\ :\ //p')
+  export tellargs
+}
+
+tell::__build_maybe_tellargs() {
+  if [ -z "${tellargs[*]}" ]; then
+    if [ -z "$1" ]; then
+      echo '\ : not standalone, try "tell build : <some/path>"'
+      return
+    else
+      tellargs+=$@
+    fi
+  fi
+  tell::__build_tellargs
+}
+
+tell::__build_tellargs() {
+  if test -z "${tellargs[*]}"; then
+    echo '\ : not standalone, try "tell build : <some/path>"'
+  else
+    for __ltell_item in ${tellargs[@]}; do
+      # "pop" the local tell item ("__ltell_item") from the tellargs array
+      export tellargs=(${tellargs[@]/$__ltell_item})
+      local __ltell_lastdir="$PWD"
+      if cd "$__ltell_lastdir/$__ltell_item"; then
+        while read __ltell_tellout; do
+          if test -n "$__ltell_tellout"; then
+              echo "$__ltell_item/$__ltell_tellout"
+          fi
+        done <<< "$(tell build)"
+        cd "$__ltell_lastdir"
+      fi
+    done
+  fi
+}

@@ -1,0 +1,7 @@
+- given name
+echo water projects tellfile
+- given withwhat
+for a in ${tellargs[@]}; do echo $a; done
+- given build
+tell::__build_maybe_tellargs skeleton sh server number bits argparse
+

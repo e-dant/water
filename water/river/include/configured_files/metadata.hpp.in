@@ -1,0 +1,18 @@
+#pragma once
+
+#define PROJECT_NAME "@PROJECT_NAME@"
+#define PROJECT_VERSION "@PROJECT_VERSION@"
+#define PROJECT_SERVER_HEADER "@PROJECT_NAME@-v@PROJECT_VERSION@"
+#define PROJECT_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define PROJECT_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define PROJECT_VERSION_PATCH @PROJECT_VERSION_PATCH@
+
+//#include <string_view>
+//#include <boost/beast/http/fields.hpp>
+//namespace river::metadata {
+//constexpr const auto project_name{ boost::beast::string_view("@PROJECT_NAME@") };
+//constexpr const auto project_version{ boost::beast::string_view("@PROJECT_VERSION@") };
+//constexpr const auto project_version_major{ @PROJECT_VERSION_MAJOR@ };
+//constexpr const auto project_version_minor{ @PROJECT_VERSION_MINOR@ };
+//constexpr const auto project_version_patch{ @PROJECT_VERSION_PATCH@ };
+//}  // namespace river::metadata

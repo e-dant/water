@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+tell::readme() {
+  if test -f README.md; then
+    cat README.md
+  else
+    echo '\ : no readme'
+  fi
+}

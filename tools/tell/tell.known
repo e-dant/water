@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+
+tell::known() {
+  local tell_always=(
+    'all'
+    'depth'
+    'help'
+    'known'
+    'readme'
+    'root'
+    'shfn'
+    'where'
+  )
+  for known_always in ${tell_always[@]}; do
+    echo $known_always
+  done
+  while read known_here_unp; do
+    echo "$known_here_unp" \
+      | grep '^- ' \
+      | sed -E 's/^-\ (given\ )(.*)/\2/g'
+  done < .tellfile
+}
+
+tell::is_known() {
+  local command="$1"
+  local tell_always=(
+    'all'
+    'depth'
+    'help'
+    'known'
+    'readme'
+    'root'
+    'shfn'
+    'where'
+  )
+  for known_always in ${tell_always[@]}; do
+    test "$known_always" = "$command" \
+      && return 0
+  done
+  while read known_here_unp; do
+    local known_here="$(echo "$known_here_unp" \
+      | grep '^- ' \
+      | sed -E 's/^- (given )(.*)/\2/g')"
+    test "$known_here" = "$command" \
+      && return 0
+  done < .tellfile
+  return 1
+}
+
+tell::is_known_always() {
+  local command="$1"
+  local tell_always=(
+    'all'
+    'depth'
+    'help'
+    'known'
+    'readme'
+    'root'
+    'shfn'
+    'where'
+  )
+  for aknown in ${tell_always[@]}; do
+    test "$aknown" = "$command" \
+      && return 0
+  done
+  return 1
+}
+
+tell::is_known_here() {
+  local command="$1"
+  while read known_here_unp; do
+    local known_here="$(echo "$known_here_unp" \
+      | grep '^- ' \
+      | sed -E 's/^- (given )(.*)/\2/g')"
+    test "$known_here" = "$command" \
+      && return 0
+  done < .tellfile
+  return 1
+}

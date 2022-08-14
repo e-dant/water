@@ -1,0 +1,5 @@
+- given name
+echo {{skeleton.tell.name}} build tools and systems
+- given build
+echo build
+

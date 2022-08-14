@@ -1,0 +1,12 @@
+[submodule "tools/compilers/gcc/src"]
+	path = tools/compilers/gcc/src
+	url = git://gcc.gnu.org/git/gcc.git
+[submodule "tools/compilers/llvm/src"]
+	path = tools/compilers/llvm/src
+	url = https://github.com/llvm/llvm-project.git
+[submodule "tools/instruments/valgrind/src"]
+	path = tools/instruments/valgrind/src
+	url = git://sourceware.org/git/valgrind.git
+[submodule "tools/compilers/ghc/src"]
+	path = tools/compilers/ghc/src
+	url = https://github.com/ghc/ghc.git

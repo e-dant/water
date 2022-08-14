@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+tell::shfn() {
+  local what="$(\
+    basename "$0")"
+  echo \
+    "export tell() { \"$(tell::whereistell)/$what\" \$@ ; }"
+}
