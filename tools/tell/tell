@@ -39,13 +39,17 @@ tell() {
     # tell water/river/build/readme
     #   -> cd water/river/build
     #   => tell readme
-    cd "${primary_input%%/*}"
+    path_input="${primary_input%/*}"
     command_input="${primary_input##*/}"
   else
     command_input="$primary_input"
   fi
 
-  all_input=($command_input ${@:2})
+  if test $# -eq 1; then
+    all_input=($command_input " : $path_input")
+  else
+    all_input=($command_input ${@:2})
+  fi
 
   # try just one argument if known
   if tell::is_known_always "$command_input"; then
