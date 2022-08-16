@@ -5,13 +5,16 @@ cd "$(dirname "$0")"
 thisdir="$PWD"
 retval=0
 
-CC="$PWD/../../../tools/compilers/llvm/build/out/bin/clang"
-CXX="$PWD/../../../tools/compilers/llvm/build/out/bin/clang++"
-
 cc::init() {
   $CC -v || {
     git submodule update --init --recursive;
     "$PWD/../../../tools/compilers/llvm/build/build";
+    export CC="$PWD/../../../tools/compilers/llvm/build/out/bin/clang";
+  }
+  $CXX -v || {
+    git submodule update --init --recursive;
+    "$PWD/../../../tools/compilers/llvm/build/build";
+    export CXX="$PWD/../../../tools/compilers/llvm/build/out/bin/clang";
   }
 }
 
