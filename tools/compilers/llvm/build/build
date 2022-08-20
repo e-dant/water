@@ -9,11 +9,16 @@ exitval=0
 
 cd $outdir || exit 1
 
-if cmake -DLLVM_ENABLE_PROJECTS=clang -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" $srcdir; then
-  if make; then
+#  -DLLVM_ENABLE_RUNTIMES=all
+
+if cmake \
+  -DLLVM_ENABLE_PROJECTS='clang;clang-tools-extra;libc;libcxx;libcxxabi;lld' \
+  -DCMAKE_BUILD_TYPE='Release' \
+  -G 'Ninja' "$srcdir"; then
+  if cmake --build "$outdir"; then
     exit 0
   else
-    echo make failed
+    echo build failed
     exitval=$((exitval + 1))
   fi
 else

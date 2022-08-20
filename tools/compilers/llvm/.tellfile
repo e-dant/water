@@ -1,5 +1,5 @@
 - given name
 echo the llvm project
 - given build
-echo build/in/build.sh
+echo build/build
 
