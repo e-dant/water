@@ -10,7 +10,7 @@ outdir="$thisdir/out/$version"
 srcdir="$thisdir/../src/llvm"
 exitval=0
 
-git submodule update --init
+#git submodule update --init
 
 if ! test -d "$outdir"; then
   if ! mkdir -p "$outdir"; then
@@ -22,9 +22,10 @@ cd "$outdir" || exit 1
 
 # todo, consider:
 #  -DLLVM_ENABLE_RUNTIMES=all
+# for toolchain-style builds
 
 if cmake \
-  -DLLVM_ENABLE_PROJECTS='all' \
+  -DLLVM_ENABLE_PROJECTS='clang;clang-tools-extra;llvm;polly;libclc;libcxx;libxxabi' \
   -DCMAKE_BUILD_TYPE='Release' \
   -G 'Ninja' "$srcdir"; then
   if cmake --build "$outdir"; then
