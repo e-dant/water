@@ -1,0 +1,18 @@
+#! /usr/bin/env bash
+
+LASTDIR="$PWD"
+cd "$(dirname "$0")/../src" || exit 1
+BRANCH="$(git status --branch --long | grep -oE 'origin/.*')"
+
+# if this checkout is the trunk
+if echo "$BRANCH" | grep -qE 'origin/(main)|(master)|(HEAD)'
+then
+  echo 'latest'
+# if this branch is a release branch
+elif echo "$BRANCH" | grep -q 'origin/release'
+then
+  echo "$BRANCH" | sed -E 's/.*\/release\/(.*)\.x/\1/g'
+else
+  echo 'unknown'
+fi
+cd "$LASTDIR"
