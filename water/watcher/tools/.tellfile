@@ -1,6 +1,0 @@
-- given name
-echo watcher
- tools directory
-- given build
-echo ../build/build
-
