@@ -1,19 +1,37 @@
 #!/usr/bin/env bash
 
-cd $(dirname $0)
+cd "$(dirname "$0")"
 
 thisdir="$PWD"
-outdir="$thisdir/out"
+tooldir="$thisdir/../tools"
+version="$("$tooldir/get-version")"
+rootoutdir="$thisdir/out"
+outdir="$thisdir/out/$version"
 srcdir="$thisdir/../src/llvm"
 exitval=0
 
-cd $outdir || exit 1
+#git submodule update --init
 
-if cmake -DLLVM_ENABLE_PROJECTS=clang -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" $srcdir; then
-  if make; then
+if ! test -d "$outdir"; then
+  if ! mkdir -p "$outdir"; then
+    exit 1
+  fi
+fi
+
+cd "$outdir" || exit 1
+
+# todo, consider:
+#  -DLLVM_ENABLE_RUNTIMES=all
+# for toolchain-style builds
+
+if cmake \
+  -DLLVM_ENABLE_PROJECTS='clang;clang-tools-extra;polly;libclc;libcxxabi;libcxx' \
+  -DCMAKE_BUILD_TYPE='Release' \
+  -G 'Ninja' "$srcdir"; then
+  if cmake --build "$outdir"; then
     exit 0
   else
-    echo make failed
+    echo build failed
     exitval=$((exitval + 1))
   fi
 else
@@ -21,5 +39,5 @@ else
   exitval=$((exitval + 1))
 fi
 
-cd $thisdir
+cd "$thisdir"
 exit $exitval

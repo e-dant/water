@@ -2,6 +2,8 @@
 echo water projects tellfile
 - given withwhat
 for a in ${tellargs[@]}; do echo $a; done
+- given contains
+echo river
 - given build
-tell::__build_maybe_tellargs skeleton sh server number bits argparse
+tell::__build_maybe_tellargs `tell contains`
 

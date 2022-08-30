@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-echo todo
+echo todo. this should build everything below it.

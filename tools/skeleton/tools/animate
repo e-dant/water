@@ -2,6 +2,10 @@
 
 # animate (for skeletons)
 animate() {
+  if echo "$@" | grep -Eq -- '(--help)|(-h)'; then
+    echo 'Usage: animate [--verbose] [--commit]'
+    return
+  fi
   local lastdir="$PWD"
   cd "$(dirname "$0")"
   local thisdir="$PWD"
@@ -12,7 +16,14 @@ animate() {
   function do_get_bone() {
     local bonefile="$thisdir/bones/$1"
     if test -f "$bonefile"; then
-      cat "$bonefile"
+      while read line; do
+        # escape any control character
+        echo "$line" \
+          | sed 's/\\/\\\\/g' \
+          | sed 's/\//\\\//g' \
+          | sed 's/$/\\n/g' \
+          | tr -d '\n'
+      done < "$bonefile"
     else
       echo 'missing_bones'
       return 1
@@ -29,11 +40,11 @@ animate() {
     esac
   }
   function is_hollowbone() {
-    ! test -f "$1" \
-      && return 1
-    local mass=$(bone_mass "$1")
-    test $mass -gt 0
-    return $?
+    ! test -f "$1" && {
+      echo not found $1;
+      return 1
+    }
+    return $(test $(bone_mass "$1") -lt 1)
   }
 
   for skeleton_file in $(do_xray --where --friskroot | tr '{' '\{'); do

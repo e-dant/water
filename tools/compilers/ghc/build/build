@@ -32,17 +32,15 @@ get::lib_prerequisites() {
 # build
 ghc::build() {
   ./boot || exit 1
-  CC="$PWD/../../llvm/build/out/bin/clang" \
-  CXX="$PWD/../../llvm/build/out/bin/clang++" \
-  LDFLAGS="-L$PWD/../../llvm/build/out/lib -L/usr/lib" \
+  CC="$PWD/../../llvm/build/out/13/bin/clang" \
+  CXX="$PWD/../../llvm/build/out/13/bin/clang++" \
+  LDFLAGS="-L$PWD/../../llvm/build/out/13/lib -L/usr/lib" \
   ./configure \
     || { cat config.log; exit 1; }
   make -j7 || exit 1
 }
 
 get::prerequisites happy alex haddock
-get::lib_prerequisites base
-
 ghc::build
 
 # done

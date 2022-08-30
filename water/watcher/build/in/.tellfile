@@ -1,5 +1,5 @@
 - given name
-echo llvm build input directory
+echo watcher
+ build input directory
 - given build
 echo ../build
-

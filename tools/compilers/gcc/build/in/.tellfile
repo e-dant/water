@@ -1,5 +1,5 @@
 - given name
 echo gnu compiler collection build input directory
 - given build
-echo build.sh
+echo ../build
 
