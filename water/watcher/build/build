@@ -9,12 +9,12 @@ cc::init() {
   $CC -v || {
     git submodule update --init --recursive;
     "$PWD/../../../tools/compilers/llvm/build/build";
-    export CC="$PWD/../../../tools/compilers/llvm/build/out/bin/clang";
+    export CC="$PWD/../../../tools/compilers/llvm/build/out/13/bin/clang";
   }
   $CXX -v || {
     git submodule update --init --recursive;
     "$PWD/../../../tools/compilers/llvm/build/build";
-    export CXX="$PWD/../../../tools/compilers/llvm/build/out/bin/clang";
+    export CXX="$PWD/../../../tools/compilers/llvm/build/out/13/bin/clang";
   }
 }
 

@@ -1,0 +1,18 @@
+#! /usr/bin/env bash
+
+LASTDIR="$PWD"
+cd "$(dirname "$0")/../../src" || exit 1
+
+if test -z "$1"
+then
+  BRANCH="master"
+else
+  BRANCH="release/${1}.x"
+fi
+
+git checkout "$BRANCH" || exit 1
+
+cd "$(dirname "$0")"
+./get
+
+cd "$LASTDIR"
