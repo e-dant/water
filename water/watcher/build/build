@@ -1,36 +1,55 @@
 #!/usr/bin/env bash
 
-LASTDIR="$PWD"
-cd "$(dirname "$0")"
-THISDIR="$PWD"
-RETVAL=0
-LLVM_VERSION=15
+build::build() {
+  local ok;
+  local lastdir="$PWD"
+  cd "$(dirname "$0")"
+  local thisdir="$PWD"
+  local llvm_version=15
 
-cc::init() {
-  LLVM_DIR="$THISDIR/../../../tools/compilers/llvm"
-  if test -z "$CC" || test -z "$CXX"
-  then
-    if ! test -x "$LLVM_DIR/build/out/$LLVM_VERSION/bin/clang"
+  cc::init() {
+    local ok;
+    local llvm_dir="$thisdir/../../../tools/compilers/llvm"
+    if test -z "$CC" || test -z "$CXX"
     then
-      "$LLVM_DIR/tools/version/set" $LLVM_VERSION
-      "$LLVM_DIR/build/build"
+      if ! test -x "$llvm_dir/build/out/$llvm_version/bin/clang"
+      then
+        "$llvm_dir/tools/version/set" $llvm_version
+        "$llvm_dir/build/build"
+        ok=$?
+      fi
+      export CC="$llvm_dir/build/out/$llvm_version/bin/clang"
+      export CXX="$llvm_dir/build/out/$llvm_version/bin/clang++"
     fi
-    export CC="$LLVM_DIR/build/out/$LLVM_VERSION/bin/clang"
-    export CXX="$LLVM_DIR/build/out/$LLVM_VERSION/bin/clang++"
-  fi
+    return $ok
+  }
+
+  cmake::build() {
+    cmake \
+      -D CMAKE_C_COMPILER="$CC" \
+      -D CMAKE_CXX_COMPILER="$CXX" \
+      -S 'in' -B 'out' -G 'Ninja' -Wno-dev \
+      && cmake --build out --config Release
+    return $?
+  }
+
+  compdb::ln() {
+    local from="$PWD/out/compile_commands.json"
+    local to='../'
+    ln -sf "$from" "$to"
+    return $?
+  }
+
+  cc::init \
+    && cmake::build \
+    && compdb::ln
+  ok=$?
+
+  cd "$lastdir"
+  return $ok
 }
 
-cmake::build() {
-  cmake \
-    -D CMAKE_C_COMPILER="$CC" \
-    -D CMAKE_CXX_COMPILER="$CXX" \
-    -S 'in' -B 'out' -G 'Ninja' -Wno-dev \
-    && cmake --build out --config Release
-  RETVAL=$?
-}
+build::build
 
-cc::init
-cmake::build
+exit $?
 
-cd "$LASTDIR"
-exit $RETVAL
