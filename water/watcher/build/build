@@ -24,7 +24,6 @@ cmake::build() {
   cmake \
     -D CMAKE_C_COMPILER="$CC" \
     -D CMAKE_CXX_COMPILER="$CXX" \
-    -D LLVM_VERSION="$LLVM_VERSION" \
     -S 'in' -B 'out' -G 'Ninja' -Wno-dev \
     && cmake --build out --config Release
   RETVAL=$?
