@@ -8,11 +8,13 @@ LLVM_VERSION=15
 
 cc::init() {
   LLVM_DIR="$THISDIR/../../../tools/compilers/llvm"
-  "$LLVM_DIR/tools/version/set" $LLVM_VERSION
   if test -z "$CC" || test -z "$CXX"
   then
-    test -x "$LLVM_DIR/build/out/$LLVM_VERSION/bin/clang" \
-      || "$LLVM_DIR/build/build"
+    if ! test -x "$LLVM_DIR/build/out/$LLVM_VERSION/bin/clang"
+    then
+      "$LLVM_DIR/tools/version/set" $LLVM_VERSION
+      "$LLVM_DIR/build/build"
+    fi
     export CC="$LLVM_DIR/build/out/$LLVM_VERSION/bin/clang"
     export CXX="$LLVM_DIR/build/out/$LLVM_VERSION/bin/clang++"
   fi
