@@ -2,4 +2,6 @@
 echo the llvm project
 - given build
 echo build/build
+- given version
+tools/version/get
 
