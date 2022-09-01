@@ -115,25 +115,19 @@ add_executable(
   "${PROJECT_NAME}"
     ../../src/main.cpp
 )
-# link with project_options and warnings
-target_link_libraries(
-  "${PROJECT_NAME}"
-    PRIVATE
-      project_options
-      project_warnings
-)
 
 # [include paths]
 target_include_directories(
   "${PROJECT_NAME}"
     PRIVATE
       ../../include
-      ../../include/
 )
 
 target_link_libraries(
   "${PROJECT_NAME}"
     PRIVATE
+      project_options
+      project_warnings
       nlohmann_json::nlohmann_json
 )
 

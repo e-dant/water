@@ -4,10 +4,10 @@ LASTDIR="$PWD"
 cd "$(dirname "$0")"
 THISDIR="$PWD"
 RETVAL=0
+LLVM_VERSION=15
 
 cc::init() {
   LLVM_DIR="$THISDIR/../../../tools/compilers/llvm"
-  LLVM_VERSION=15
   "$LLVM_DIR/tools/version/set" $LLVM_VERSION
   if test -z "$CC" || test -z "$CXX"
   then
@@ -22,6 +22,7 @@ cmake::build() {
   cmake \
     -D CMAKE_C_COMPILER="$CC" \
     -D CMAKE_CXX_COMPILER="$CXX" \
+    -D LLVM_VERSION="$LLVM_VERSION" \
     -S 'in' -B 'out' -G 'Ninja' -Wno-dev \
     && cmake --build out --config Release
   RETVAL=$?
