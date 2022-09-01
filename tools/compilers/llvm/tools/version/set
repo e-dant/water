@@ -5,7 +5,16 @@ cd "$(dirname "$0")/../../src" || exit 1
 
 if test -z "$1"
 then
-  BRANCH="master"
+  BRANCH="origin/HEAD"
+elif echo "$@" | grep -q 'help'
+then
+  echo "usage: $0 [version | help]"
+  echo '  help:'
+  echo '    show this message.'
+  echo '  version:'
+  echo '    a release version, such as "15".'
+  echo '    defaults to HEAD.'
+  exit 0
 else
   BRANCH="release/${1}.x"
 fi
