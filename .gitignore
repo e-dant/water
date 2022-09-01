@@ -3,3 +3,4 @@ wips
 .cache
 */.cache
 */**/.cache
+compile_commands.json
