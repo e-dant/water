@@ -1,7 +1,12 @@
 #! /usr/bin/env bash
 
 LASTDIR="$PWD"
-cd "$(dirname "$0")/../../src" || exit 1
+LLVM_SRC_DIR="$(dirname "$0")/../../src"
+
+test ! -d "$LLVM_SRC_DIR" \
+  && git submodule update --init --recursive
+
+cd "$LLVM_SRC_DIR" || exit 1
 
 if test -z "$1"
 then
