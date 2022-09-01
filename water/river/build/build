@@ -1,21 +1,20 @@
 #!/usr/bin/env bash
 
-lastdir="$PWD"
+LASTDIR="$PWD"
 cd "$(dirname "$0")"
-thisdir="$PWD"
-retval=0
+THISDIR="$PWD"
+RETVAL=0
 
 cc::init() {
-  $CC -v || {
-    git submodule update --init --recursive;
-    "$PWD/../../../tools/compilers/llvm/build/build";
-    export CC="$PWD/../../../tools/compilers/llvm/build/out/bin/clang";
-  }
-  $CXX -v || {
-    git submodule update --init --recursive;
-    "$PWD/../../../tools/compilers/llvm/build/build";
-    export CXX="$PWD/../../../tools/compilers/llvm/build/out/bin/clang";
-  }
+  LLVM_DIR="$THISDIR/../../../tools/compilers/llvm"
+  LLVM_VERSION="$("$LLVM_DIR/tools/version/get")"
+  if test -z "$CC" || test -z "$CXX"
+  then
+    git submodule update --init --recursive
+    "$LLVM_DIR/build/build"
+    export CC="$LLVM_DIR/build/out/$LLVM_VERSION/bin/clang"
+    export CXX="$LLVM_DIR/build/out/$LLVM_VERSION/bin/clang++"
+  fi
 }
 
 cmake::build() {
@@ -24,11 +23,11 @@ cmake::build() {
     -D CMAKE_CXX_COMPILER="$CXX" \
     -S 'in' -B 'out' -G 'Ninja' -Wno-dev \
     && cmake --build out --config Release
-  retval=$?
+  RETVAL=$?
 }
 
 cc::init
 cmake::build
 
-cd "$lastdir"
-exit $retval
+cd "$LASTDIR"
+exit $RETVAL
