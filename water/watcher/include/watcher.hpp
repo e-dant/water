@@ -1,11 +1,13 @@
 #include <algorithm>
 #include <chrono>
+#include <exception>
 #include <filesystem>
 #include <fstream>
 #include <functional>
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include <system_error>
 #include <thread>
 #include <unordered_map>
 #include <vector>
@@ -13,17 +15,21 @@
 namespace water {
 
 class watcher {
+ private:
+  std::unordered_map<std::string,
+                     std::filesystem::file_time_type>
+      bucket;
+  std::string root;
+
  public:
   enum class status { created, modified, erased };
-
-  std::string path_to_watch;
   /** @brief watcher/constructor
    *  @param path - path to monitor for
    *  @see watcher::status
    *  Creates a file map from the
    *  given path.
    **/
-  watcher(std::string root = ".") : path_to_watch{root} {
+  watcher(std::string root = ".") : root{root} {
     using namespace std::filesystem;
     if (is_directory(root)) {
       for (const auto& file :
@@ -46,28 +52,45 @@ class watcher {
   void run(const std::function<void(std::string, status)>
                action) {
     using namespace std::filesystem;
-    auto it = bucket.begin();
-    // first of all
-    while (it != bucket.end()) {
-      // check if this thing even exists
-      if (!exists(it->first)) {
-        // if not, call the closure on it,
-        // indicating erasure
-        action(it->first, status::erased);
-        // and removing it from our map
-        it = bucket.erase(it);
-      } else {
-        it++;
+
+    {
+      // first of all
+      auto file = bucket.begin();
+      while (file != bucket.end()) {
+        // check if the stuff in out bucket
+        // exists anymore
+        if (!exists(file->first)) {
+          // if not, call the closure on it,
+          // indicating erasure
+          action(file->first, status::erased);
+          // and get it out of here.
+          // bucket, erase it!
+          file = bucket.erase(file);
+        } else {
+          file++;
+        }
       }
     }
+
     // if this thing is a directory
-    if (is_directory(path_to_watch)) {
+    if (is_directory(root)) {
       // iterate through its contents
       for (const auto& file :
-           recursive_directory_iterator(path_to_watch)) {
+           recursive_directory_iterator(root)) {
+        auto ec = std::error_code{};
         // grabbing the last write times
         const auto current_file_last_write_time =
-            last_write_time(file);
+            last_write_time(file, ec);
+        // and checking for errors...
+        if (ec) {
+          // uh oh! the file disappeared while we
+          // were (trying to) get a look at it.
+          // it's gone, that's ok,
+          // now let's call the closure
+          action(file.path().string(), status::erased);
+          // and get it out of here
+          bucket.erase(file.path().string());
+        }
         // checking if they're in our map
         if (!bucket.contains(file.path().string())) {
           // putting them there if not
@@ -94,34 +117,26 @@ class watcher {
     // if this thing is a file
     else {
       // grab the last write time
-      auto current_file_last_write_time =
-          last_write_time(path_to_watch);
+      const auto current_file_last_write_time =
+          last_write_time(root);
       // check if it's in our map
-      if (!bucket.contains(path_to_watch)) {
+      if (!bucket.contains(root)) {
         // put it there if not
-        bucket[path_to_watch] =
-            current_file_last_write_time;
+        bucket[root] = current_file_last_write_time;
         // and call the closure on it,
         // indicating creation
-        action(path_to_watch, status::created);
+        action(root, status::created);
       }
       // if it is in our map
       else {
-        if (bucket[path_to_watch] !=
-            current_file_last_write_time) {
+        if (bucket[root] != current_file_last_write_time) {
           // I think you get the drift by now.
-          bucket[path_to_watch] =
-              current_file_last_write_time;
-          action(path_to_watch, status::modified);
+          bucket[root] = current_file_last_write_time;
+          action(root, status::modified);
         }
       }
     }
   }
-
- private:
-  std::unordered_map<std::string,
-                     std::filesystem::file_time_type>
-      bucket;
 };
 
 }  // namespace water
