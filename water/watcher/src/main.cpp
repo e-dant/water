@@ -5,39 +5,31 @@
 
 int main() {
   using namespace water;
+  //static constexpr const auto root = ".";
+  static constexpr const auto delay =
+      std::chrono::milliseconds(16);
 
-  std::cout << "watching..." << std::endl;
-
-  static constexpr const auto poll_delay =
-      std::chrono::milliseconds(100);
-
-  auto w = watcher{"."};
+  auto w = watcher();
 
   while (true) {
-    w.run<void>([&](std::string path_to_watch,
-               watcher::status status) -> void {
-      switch (status) {
-        case watcher::status::created:
-          std::cout
-              << "File created: " << path_to_watch
-              << '\n';
-          break;
-        case watcher::status::modified:
-          std::cout << "File modified: "
-                    << path_to_watch << '\n';
-          break;
-        case watcher::status::erased:
-          std::cout
-              << "File erased: " << path_to_watch
-              << '\n';
-          break;
-        default:
-          std::cout
-              << "Error! Unknown file status.\n";
-      }
-    });
+    w.run<void>(
+        [&](std::string hit, watcher::status status) {
+          switch (status) {
+            case watcher::status::created:
+              std::cout << "created: " << hit << std::endl;
+              break;
+            case watcher::status::modified:
+              std::cout << "modified: " << hit << std::endl;
+              break;
+            case watcher::status::erased:
+              std::cout << "erased: " << hit << std::endl;
+              break;
+            default:
+              std::cout << "unknown: " << hit << std::endl;
+          }
+        });
 
-    std::this_thread::sleep_for(poll_delay);
+    std::this_thread::sleep_for(delay);
   }
 
   return 0;
