@@ -8,14 +8,14 @@
 
 namespace water {
 
-template <typename From>
-concept Path = requires(From path) {
-  { path } -> std::convertible_to<std::string>;
-};
-
 template <typename T>
 concept String = requires(T str) {
   { str } -> std::convertible_to<std::string>;
+};
+
+template <typename From>
+concept Path = requires(From path) {
+  { path } -> String;
 };
 
 template <typename Returns, typename... Accepts>
