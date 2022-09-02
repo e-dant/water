@@ -3,32 +3,40 @@
 #include <thread>
 #include <watcher.hpp>
 
-int main() {
-  using namespace water;
-  // static constexpr const auto root = ".";
-  static constexpr const auto delay =
-      std::chrono::milliseconds(16);
+namespace literals {
+using ms = std::chrono::milliseconds;
+using status = water::watcher::status;
+using str = std::string;
+using std::cout;
+using std::endl;
+using std::this_thread::sleep_for;
+}  // namespace literals
 
-  auto w = watcher();
+int main() {
+  using namespace literals;
+  static constexpr const auto root = ".";
+  static constexpr const auto delay = ms{16};
+
+  auto w = water::watcher(root);
 
   while (true) {
-    w.run([&](std::string hit, watcher::status status) {
-      switch (status) {
-        case watcher::status::created:
-          std::cout << "created: " << hit << std::endl;
+    w.run([&](str hit, status stat) {
+      switch (stat) {
+        case status::created:
+          cout << "created: " << hit << endl;
           break;
-        case watcher::status::modified:
-          std::cout << "modified: " << hit << std::endl;
+        case status::modified:
+          cout << "modified: " << hit << endl;
           break;
-        case watcher::status::erased:
-          std::cout << "erased: " << hit << std::endl;
+        case status::erased:
+          cout << "erased: " << hit << endl;
           break;
         default:
-          std::cout << "unknown: " << hit << std::endl;
+          cout << "unknown: " << hit << endl;
       }
     });
 
-    std::this_thread::sleep_for(delay);
+    sleep_for(delay);
   }
 
   return 0;
