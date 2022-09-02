@@ -66,7 +66,7 @@ class watcher {
    *  Executes the given closure when they
    *  happen.
    **/
-  void run(const Callback auto closure) {
+  void run(const Callback auto callback) {
     using namespace std::filesystem;
 
     {
@@ -78,7 +78,7 @@ class watcher {
         if (!exists(file->first)) {
           // if not, call the closure on it,
           // indicating erasure
-          closure(file->first, status::erased);
+          callback(file->first, status::erased);
           // and get it out of here.
           // bucket, erase it!
           file = bucket.erase(file);
@@ -103,7 +103,7 @@ class watcher {
           // were (trying to) get a look at it.
           // it's gone, that's ok,
           // now let's call the closure
-          closure(file.path().string(), status::erased);
+          callback(file.path().string(), status::erased);
           // and get it out of here
           bucket.erase(file.path().string());
         }
@@ -114,7 +114,7 @@ class watcher {
               current_file_last_write_time;
           // and calling the closure on them,
           // indicating creation
-          closure(file.path().string(), status::created);
+          callback(file.path().string(), status::created);
         }
         // if it is in our map
         else {
@@ -125,7 +125,7 @@ class watcher {
                 current_file_last_write_time;
             // and call the closure on them,
             // indicating modification
-            closure(file.path().string(), status::modified);
+            callback(file.path().string(), status::modified);
           }
         }
       }
@@ -141,14 +141,14 @@ class watcher {
         bucket[root] = current_file_last_write_time;
         // and call the closure on it,
         // indicating creation
-        closure(root, status::created);
+        callback(root, status::created);
       }
       // if it is in our map
       else {
         if (bucket[root] != current_file_last_write_time) {
           // I think you get the drift by now.
           bucket[root] = current_file_last_write_time;
-          closure(root, status::modified);
+          callback(root, status::modified);
         }
       }
     }
