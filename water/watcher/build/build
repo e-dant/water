@@ -5,7 +5,7 @@ build::build() {
   local lastdir="$PWD"
   cd "$(dirname "$0")"
   local thisdir="$PWD"
-  local llvm_version=15
+  local llvm_version=14
 
   cc::init() {
     local ok;

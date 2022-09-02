@@ -35,6 +35,7 @@ FetchContent_Declare(
 FetchContent_Declare(
   json
   URL "https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz"
+  DOWNLOAD_EXTRACT_TIMESTAMP
 )
 
 FetchContent_MakeAvailable(_project_options json)
@@ -105,7 +106,8 @@ dynamic_project_options(
   #ENABLE_INCLUDE_WHAT_YOU_USE
   ENABLE_CONAN
   ENABLE_PCH
-  #PCH_HEADERS
+  PCH_HEADERS
+  <iostream>
   #<vector>
   #<string>
 )
