@@ -1,18 +1,26 @@
-#include <algorithm>
-#include <chrono>
-#include <exception>
 #include <filesystem>
-#include <fstream>
 #include <functional>
-#include <iomanip>
 #include <iostream>
 #include <string>
-#include <system_error>
-#include <thread>
+#include <string_view>
 #include <unordered_map>
-#include <vector>
 
 namespace water {
+
+template <typename T>
+concept Path = requires(T path) {
+  { path } -> std::convertible_to<std::string>;
+};
+
+template <typename T, typename... V>
+concept Closure = requires(T fn) {
+  { fn } -> std::same_as<std::function<T>(V...)>;
+};
+
+template <typename T, typename U, typename... V>
+concept SplittingClosure = requires(T fn) {
+  { fn } -> std::convertible_to<std::function<U>(V...)>;
+};
 
 class watcher {
  private:
@@ -29,7 +37,10 @@ class watcher {
    *  Creates a file map from the
    *  given path.
    **/
-  watcher(std::string root = ".") : root{root} {
+
+  template <typename T>
+  requires Path<T> watcher(T root = ".")
+      : root{std::string_view(root)} {
     using namespace std::filesystem;
     if (is_directory(root)) {
       for (const auto& file :
@@ -42,6 +53,12 @@ class watcher {
     }
   }
 
+  auto get() {
+    using refwrap =
+        std::reference_wrapper<const decltype(bucket)>;
+    return refwrap(bucket);
+  }
+
   /** @brief watcher/run
    *  @param closure - action to perform on
    *  status "ticks"
@@ -49,20 +66,23 @@ class watcher {
    *  Executes the given closure when they
    *  happen.
    **/
-  void run(const std::function<void(std::string, status)>
-               action) {
+  // void run(const std::function<void(std::string, status)>
+  //             action)
+  template <typename T>
+  requires Closure<void, std::string, status>
+  void run(const T closure) {
     using namespace std::filesystem;
 
     {
       // first of all
       auto file = bucket.begin();
       while (file != bucket.end()) {
-        // check if the stuff in out bucket
+        // check if the stuff in our bucket
         // exists anymore
         if (!exists(file->first)) {
           // if not, call the closure on it,
           // indicating erasure
-          action(file->first, status::erased);
+          closure(file->first, status::erased);
           // and get it out of here.
           // bucket, erase it!
           file = bucket.erase(file);
@@ -87,7 +107,7 @@ class watcher {
           // were (trying to) get a look at it.
           // it's gone, that's ok,
           // now let's call the closure
-          action(file.path().string(), status::erased);
+          closure(file.path().string(), status::erased);
           // and get it out of here
           bucket.erase(file.path().string());
         }
@@ -98,7 +118,7 @@ class watcher {
               current_file_last_write_time;
           // and calling the closure on them,
           // indicating creation
-          action(file.path().string(), status::created);
+          closure(file.path().string(), status::created);
         }
         // if it is in our map
         else {
@@ -109,7 +129,7 @@ class watcher {
                 current_file_last_write_time;
             // and call the closure on them,
             // indicating modification
-            action(file.path().string(), status::modified);
+            closure(file.path().string(), status::modified);
           }
         }
       }
@@ -125,14 +145,14 @@ class watcher {
         bucket[root] = current_file_last_write_time;
         // and call the closure on it,
         // indicating creation
-        action(root, status::created);
+        closure(root, status::created);
       }
       // if it is in our map
       else {
         if (bucket[root] != current_file_last_write_time) {
           // I think you get the drift by now.
           bucket[root] = current_file_last_write_time;
-          action(root, status::modified);
+          closure(root, status::modified);
         }
       }
     }
