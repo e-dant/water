@@ -12,7 +12,7 @@ int main() {
   auto w = watcher();
 
   while (true) {
-    w.run<void>(
+    w.run(
         [&](std::string hit, watcher::status status) {
           switch (status) {
             case watcher::status::created:

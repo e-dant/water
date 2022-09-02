@@ -32,13 +32,14 @@ FetchContent_Declare(
   URL "https://github.com/aminya/project_options/archive/refs/tags/v0.24.0.zip"
   DOWNLOAD_EXTRACT_TIMESTAMP
 )
-FetchContent_Declare(
-  json
-  URL "https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz"
-  DOWNLOAD_EXTRACT_TIMESTAMP
-)
+#FetchContent_Declare(
+#  json
+#  URL "https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz"
+#  DOWNLOAD_EXTRACT_TIMESTAMP
+#)
+#FetchContent_MakeAvailable(_project_options json)
 
-FetchContent_MakeAvailable(_project_options json)
+FetchContent_MakeAvailable(_project_options)
 
 include("${_project_options_SOURCE_DIR}/Index.cmake")
 include("${_project_options_SOURCE_DIR}/src/DynamicProjectOptions.cmake")
@@ -130,7 +131,6 @@ target_link_libraries(
     PRIVATE
       project_options
       project_warnings
-      nlohmann_json::nlohmann_json
 )
 
 # [package]

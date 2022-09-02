@@ -5,19 +5,17 @@
 #include <functional>
 #include <iomanip>
 #include <iostream>
-#include <nlohmann/json.hpp>
 #include <string>
 #include <thread>
 #include <unordered_map>
 #include <vector>
 
 namespace water {
-using json = nlohmann::json;
 
 class watcher {
  public:
   enum class status { created, modified, erased };
-  bool is_erased, is_created, is_modified = false;
+
   std::string path_to_watch;
   /** @brief watcher/constructor
    *  @param path - path to monitor for
@@ -26,16 +24,15 @@ class watcher {
    *  given path.
    **/
   watcher(std::string root = ".") : path_to_watch{root} {
-    if (std::filesystem::is_directory(root)) {
+    using namespace std::filesystem;
+    if (is_directory(root)) {
       for (const auto& file :
-           std::filesystem::recursive_directory_iterator(
-               root)) {
-        file_map[file.path().string()] =
-            std::filesystem::last_write_time(file);
+           recursive_directory_iterator(root)) {
+        bucket[file.path().string()] =
+            last_write_time(file);
       }
     } else {
-      file_map[root] =
-          std::filesystem::last_write_time(root);
+      bucket[root] = last_write_time(root);
     }
   }
 
@@ -46,68 +43,76 @@ class watcher {
    *  Executes the given closure when they
    *  happen.
    **/
-  template <typename T = void>
-  void run(
-      const std::function<T(std::string, status)> action) {
-    is_erased = false;
-    is_created = false;
-    is_modified = false;
-    auto it = file_map.begin();
-    while (it != file_map.end()) {
-      // File erased
-      if (!std::filesystem::exists(it->first)) {
+  void run(const std::function<void(std::string, status)>
+               action) {
+    using namespace std::filesystem;
+    auto it = bucket.begin();
+    // first of all
+    while (it != bucket.end()) {
+      // check if this thing even exists
+      if (!exists(it->first)) {
+        // if not, call the closure on it,
+        // indicating erasure
         action(it->first, status::erased);
-        it = file_map.erase(it);
-        is_erased = true;
+        // and removing it from our map
+        it = bucket.erase(it);
       } else {
         it++;
       }
     }
-    // Check if a file was created or modified
-    // If path is a directory:
-    if (std::filesystem::is_directory(path_to_watch)) {
+    // if this thing is a directory
+    if (is_directory(path_to_watch)) {
+      // iterate through its contents
       for (const auto& file :
-           std::filesystem::recursive_directory_iterator(
-               path_to_watch)) {
+           recursive_directory_iterator(path_to_watch)) {
+        // grabbing the last write times
         const auto current_file_last_write_time =
-            std::filesystem::last_write_time(file);
-        // File created
-        if (!file_map.contains(file.path().string())) {
-          file_map[file.path().string()] =
+            last_write_time(file);
+        // checking if they're in our map
+        if (!bucket.contains(file.path().string())) {
+          // putting them there if not
+          bucket[file.path().string()] =
               current_file_last_write_time;
+          // and calling the closure on them,
+          // indicating creation
           action(file.path().string(), status::created);
-          is_created = true;
         }
-        // File modified
+        // if it is in our map
         else {
-          if (file_map[file.path().string()] !=
+          // we update their last write times
+          if (bucket[file.path().string()] !=
               current_file_last_write_time) {
-            file_map[file.path().string()] =
+            bucket[file.path().string()] =
                 current_file_last_write_time;
+            // and call the closure on them,
+            // indicating modification
             action(file.path().string(), status::modified);
-            is_modified = true;
           }
         }
       }
-      // If path is a file:
-    } else {
+    }
+    // if this thing is a file
+    else {
+      // grab the last write time
       auto current_file_last_write_time =
-          std::filesystem::last_write_time(path_to_watch);
-      // File created
-      if (!file_map.contains(path_to_watch)) {
-        file_map[path_to_watch] =
+          last_write_time(path_to_watch);
+      // check if it's in our map
+      if (!bucket.contains(path_to_watch)) {
+        // put it there if not
+        bucket[path_to_watch] =
             current_file_last_write_time;
+        // and call the closure on it,
+        // indicating creation
         action(path_to_watch, status::created);
-        is_created = true;
       }
-      // File modified
+      // if it is in our map
       else {
-        if (file_map[path_to_watch] !=
+        if (bucket[path_to_watch] !=
             current_file_last_write_time) {
-          file_map[path_to_watch] =
+          // I think you get the drift by now.
+          bucket[path_to_watch] =
               current_file_last_write_time;
           action(path_to_watch, status::modified);
-          is_modified = true;
         }
       }
     }
@@ -116,7 +121,7 @@ class watcher {
  private:
   std::unordered_map<std::string,
                      std::filesystem::file_time_type>
-      file_map;
+      bucket;
 };
 
 }  // namespace water
