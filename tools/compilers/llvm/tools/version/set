@@ -1,0 +1,32 @@
+#! /usr/bin/env bash
+
+LASTDIR="$PWD"
+LLVM_SRC_DIR="$(dirname "$0")/../../src"
+
+test ! -d "$LLVM_SRC_DIR" \
+  && git submodule update --init --recursive
+
+cd "$LLVM_SRC_DIR" || exit 1
+
+if test -z "$1"
+then
+  BRANCH="origin/HEAD"
+elif echo "$@" | grep -q 'help'
+then
+  echo "usage: $0 [version | help]"
+  echo '  help:'
+  echo '    show this message.'
+  echo '  version:'
+  echo '    a release version, such as "15".'
+  echo '    defaults to HEAD.'
+  exit 0
+else
+  BRANCH="release/${1}.x"
+fi
+
+git checkout "$BRANCH" || exit 1
+
+cd "$(dirname "$0")"
+./get
+
+cd "$LASTDIR"

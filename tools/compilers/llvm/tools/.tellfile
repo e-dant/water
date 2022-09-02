@@ -1,0 +1,7 @@
+- given name
+echo the llvm project tools
+- given build
+echo ../build/build
+- given version
+version/get
+

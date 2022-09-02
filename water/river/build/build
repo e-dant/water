@@ -1,34 +1,55 @@
 #!/usr/bin/env bash
 
-lastdir="$PWD"
-cd "$(dirname "$0")"
-thisdir="$PWD"
-retval=0
+build::build() {
+  local ok;
+  local lastdir="$PWD"
+  cd "$(dirname "$0")"
+  local thisdir="$PWD"
+  local llvm_version=15
 
-cc::init() {
-  $CC -v || {
-    git submodule update --init --recursive;
-    "$PWD/../../../tools/compilers/llvm/build/build";
-    export CC="$PWD/../../../tools/compilers/llvm/build/out/bin/clang";
+  cc::init() {
+    local ok;
+    local llvm_dir="$thisdir/../../../tools/compilers/llvm"
+    if test -z "$CC" || test -z "$CXX"
+    then
+      if ! test -x "$llvm_dir/build/out/$llvm_version/bin/clang"
+      then
+        "$llvm_dir/tools/version/set" $llvm_version
+        "$llvm_dir/build/build"
+        ok=$?
+      fi
+      export CC="$llvm_dir/build/out/$llvm_version/bin/clang"
+      export CXX="$llvm_dir/build/out/$llvm_version/bin/clang++"
+    fi
+    return $ok
   }
-  $CXX -v || {
-    git submodule update --init --recursive;
-    "$PWD/../../../tools/compilers/llvm/build/build";
-    export CXX="$PWD/../../../tools/compilers/llvm/build/out/bin/clang";
+
+  cmake::build() {
+    cmake \
+      -D CMAKE_C_COMPILER="$CC" \
+      -D CMAKE_CXX_COMPILER="$CXX" \
+      -S 'in' -B 'out' -G 'Ninja' -Wno-dev \
+      && cmake --build out --config Release
+    return $?
   }
+
+  compdb::ln() {
+    local from="$PWD/out/compile_commands.json"
+    local to='../'
+    ln -sf "$from" "$to"
+    return $?
+  }
+
+  cc::init \
+    && cmake::build \
+    && compdb::ln
+  ok=$?
+
+  cd "$lastdir"
+  return $ok
 }
 
-cmake::build() {
-  cmake \
-    -D CMAKE_C_COMPILER="$CC" \
-    -D CMAKE_CXX_COMPILER="$CXX" \
-    -S 'in' -B 'out' -G 'Ninja' -Wno-dev \
-    && cmake --build out --config Release
-  retval=$?
-}
+build::build
 
-cc::init
-cmake::build
+exit $?
 
-cd "$lastdir"
-exit $retval

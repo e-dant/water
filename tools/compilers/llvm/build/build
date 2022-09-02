@@ -4,7 +4,7 @@ cd "$(dirname "$0")"
 
 thisdir="$PWD"
 tooldir="$thisdir/../tools"
-version="$("$tooldir/get-version")"
+version="$("$tooldir/version/get")"
 rootoutdir="$thisdir/out"
 outdir="$thisdir/out/$version"
 srcdir="$thisdir/../src/llvm"
