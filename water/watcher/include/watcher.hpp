@@ -4,22 +4,23 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <utility>
 
 namespace water {
 
-template <typename T>
-concept Path = requires(T path) {
+template <typename From>
+concept Path = requires(From path) {
   { path } -> std::convertible_to<std::string>;
 };
 
-template <typename T, typename... V>
-concept Closure = requires(T fn) {
-  { fn } -> std::same_as<std::function<T>(V...)>;
+template <typename T>
+concept String = requires(T str) {
+  { str } -> std::convertible_to<std::string>;
 };
 
-template <typename T, typename U, typename... V>
-concept SplittingClosure = requires(T fn) {
-  { fn } -> std::convertible_to<std::function<U>(V...)>;
+template <typename Returns, typename... Accepts>
+concept Callback = requires(Returns fn) {
+  std::is_convertible_v<void, Returns>;
 };
 
 class watcher {
@@ -31,15 +32,14 @@ class watcher {
 
  public:
   enum class status { created, modified, erased };
+
   /** @brief watcher/constructor
    *  @param path - path to monitor for
    *  @see watcher::status
    *  Creates a file map from the
    *  given path.
    **/
-
-  template <typename T>
-  requires Path<T> watcher(T root = ".")
+  watcher(const Path auto root = ".")
       : root{std::string_view(root)} {
     using namespace std::filesystem;
     if (is_directory(root)) {
@@ -66,11 +66,7 @@ class watcher {
    *  Executes the given closure when they
    *  happen.
    **/
-  // void run(const std::function<void(std::string, status)>
-  //             action)
-  template <typename T>
-  requires Closure<void, std::string, status>
-  void run(const T closure) {
+  void run(const Callback auto closure) {
     using namespace std::filesystem;
 
     {

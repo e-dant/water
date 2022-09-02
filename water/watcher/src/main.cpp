@@ -14,30 +14,30 @@ using std::this_thread::sleep_for;
 
 int main() {
   using namespace literals;
-  static constexpr const auto root = ".";
-  static constexpr const auto delay = ms{16};
+  static constexpr auto root = ".";
 
-  auto w = water::watcher(root);
+  auto watcher = water::watcher(root);
 
-  while (true) {
-    w.run([&](str hit, status stat) {
-      switch (stat) {
-        case status::created:
-          cout << "created: " << hit << endl;
-          break;
-        case status::modified:
-          cout << "modified: " << hit << endl;
-          break;
-        case status::erased:
-          cout << "erased: " << hit << endl;
-          break;
-        default:
-          cout << "unknown: " << hit << endl;
-      }
-    });
-
+  auto callback = [&](str hit, status stat) {
+    static constexpr auto delay = ms{16};
+    switch (stat) {
+      case status::created:
+        cout << "created: " << hit << endl;
+        break;
+      case status::modified:
+        cout << "modified: " << hit << endl;
+        break;
+      case status::erased:
+        cout << "erased: " << hit << endl;
+        break;
+      default:
+        cout << "unknown: " << hit << endl;
+    }
     sleep_for(delay);
-  }
+  };
+
+  while (true)
+    watcher.run(callback);
 
   return 0;
 }
