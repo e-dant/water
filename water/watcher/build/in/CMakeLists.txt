@@ -109,8 +109,9 @@ dynamic_project_options(
   ENABLE_PCH
   PCH_HEADERS
   <iostream>
-  #<vector>
-  #<string>
+  <vector>
+  <filesystem>
+  <string>
 )
 
 # [consumables]

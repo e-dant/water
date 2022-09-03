@@ -1,4 +1,3 @@
-#include <atomic>
 #include <filesystem>
 #include <functional>
 #include <iostream>
@@ -38,51 +37,35 @@ concept Callback = requires(Returns fn, Accepts... args) {
       and Invocable<Returns, Accepts...>;
 };
 
-namespace watcher {
-
+class watcher {
+ public:
   enum class status { created, modified, erased };
 
-  // anonymous namespace
-  // for "private" variables
-  // (via internal linkage)
-  namespace {
+ private:
+  static constexpr auto dir_opts =
+      std::filesystem::directory_options::
+          skip_permission_denied &
+      std::filesystem::directory_options::
+          follow_directory_symlink;
+  std::unordered_map<std::string,
+                     std::filesystem::file_time_type>
+      bucket;
+  std::string path;
 
-  // shorthands for
-  //  - directory_options
-  //  - follow_directory_symlink
-  //  - skip_permission_denied
-  //  - bucket_t, a map of strings and times
-  using dir_opt_t = std::filesystem::directory_options;
-  using std::filesystem::directory_options::
-      follow_directory_symlink;
-  using std::filesystem::directory_options::
-      skip_permission_denied;
-  using bucket_t =
-      std::unordered_map<std::string,
-                         std::filesystem::file_time_type>;
-
-  // we need these variables to make caching state easier
-  // ... which is what objects are for, right?
-  // well, maybe this should be an object, I'm not sure,
-  // I just like functions is all.
-  static constexpr dir_opt_t dir_opt  // NOLINT
-      = skip_permission_denied & follow_directory_symlink;
-
-  static bucket_t bucket;  // NOLINT
-  }                        // namespace
-
+ public:
   /* @brief watcher/constructor
    * @param path - path to monitor for
    * @see watcher::status
    * Creates a file map from the
    * given path. */
-  void populate(const Path auto path = ".") {
+  watcher(const Path auto path = ".")
+      : path{std::string_view(path)} {
     using namespace std::filesystem;
     using dir_iter = recursive_directory_iterator;
 
     if (exists(path)) {
       if (is_directory(path)) {
-        for (const auto& file : dir_iter(path, dir_opt))
+        for (const auto& file : dir_iter(path))
           if (exists(file))
             bucket[file.path().string()] =
                 last_write_time(file);
@@ -97,13 +80,11 @@ namespace watcher {
   /* @brief get
    * Returns a const (wrapped) reference to our
    * (private) bucket. */
-  template <typename Provider = std::reference_wrapper<
-                const decltype(bucket)>>
   auto get() {
-    // reference wrap the bucket as const...
-    // no funny business! unless you want
-    // something else, of course.
-    using ref_wrap = Provider;
+    // reference wrap the bucket as const --
+    // no funny business!
+    using ref_wrap =
+        std::reference_wrapper<const decltype(bucket)>;
     return ref_wrap(bucket);
   }
 
@@ -183,8 +164,7 @@ namespace watcher {
    * Monitors `path_to_watch` for changes.
    * Executes the given closure when they
    * happen. */
-  void run(const Path auto path,
-           const Callback auto callback) {
+  void run(const Callback auto callback) {
     using namespace std::filesystem;
     using dir_iter = recursive_directory_iterator;
 
@@ -195,10 +175,9 @@ namespace watcher {
       // if this thing is a directory
       if (is_directory(path))
         // iterate through its contents
-        for (const auto& file : dir_iter(path, dir_opt)) {
-          // std::cout << "scanning " << file.path()
-          //           << std::endl;
-
+        for (const auto& file : dir_iter(path, dir_opts)) {
+          std::cout << "scanning " << file.path()
+                    << std::endl;
           // scanning all the while
           scan_file(file.path(), callback);
         }
@@ -209,11 +188,11 @@ namespace watcher {
     }
   }
 
-  template <auto delay = 16>
   void run() {
-    const Path auto path = ".";
-    // std::cout << "watching " << path << std::endl;
-    run(path, [](const Path auto f, status s) {
+    std::cout << "watching " << path << std::endl;
+    run([](const Path auto f, status s) {
+      static constexpr auto delay =
+          std::chrono::milliseconds{16};
       switch (s) {
         case status::created:
           std::cout << "created: " << f << std::endl;
@@ -227,10 +206,9 @@ namespace watcher {
         default:
           std::cout << "unknown: " << f << std::endl;
       }
-      std::this_thread::sleep_for(
-          std::chrono::milliseconds{delay});
+      std::this_thread::sleep_for(delay);
     });
   }
+};
 
-}  // namespace watcher
 }  // namespace water

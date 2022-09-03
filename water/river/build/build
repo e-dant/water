@@ -5,12 +5,12 @@ build::build() {
   local lastdir="$PWD"
   cd "$(dirname "$0")"
   local thisdir="$PWD"
-  local llvm_version=15
+  local llvm_version=14
 
   cc::init() {
     local ok;
     local llvm_dir="$thisdir/../../../tools/compilers/llvm"
-    if test -z "$CC" || test -z "$CXX"
+    if ! test "$CC -v" || ! test "$CXX -v"
     then
       if ! test -x "$llvm_dir/build/out/$llvm_version/bin/clang"
       then
@@ -33,7 +33,7 @@ build::build() {
     return $?
   }
 
-  compdb::ln() {
+  compdb::ln::compdb() {
     local from="$PWD/out/compile_commands.json"
     local to='../'
     ln -sf "$from" "$to"
@@ -42,7 +42,7 @@ build::build() {
 
   cc::init \
     && cmake::build \
-    && compdb::ln
+    && compdb::ln::compdb
   ok=$?
 
   cd "$lastdir"
@@ -52,4 +52,3 @@ build::build() {
 build::build
 
 exit $?
-
