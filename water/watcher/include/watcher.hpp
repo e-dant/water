@@ -82,8 +82,10 @@ static bucket_t bucket;  // NOLINT
 void populate(const Path auto path = {"."}) {
   using namespace std::filesystem;
   using dir_iter = recursive_directory_iterator;
+
   auto good_count = 1;
   auto bad_count = 1;
+
   if (exists(path)) {
     if (is_directory(path)) {
       for (const auto& file : dir_iter(path, dir_opt)) {
@@ -102,6 +104,7 @@ void populate(const Path auto path = {"."}) {
   } else {
     throw std::runtime_error{"path does not exist."};
   }
+
   std::cout << "watching " << good_count << " files."
             << std::endl;
   if (bad_count > 1)

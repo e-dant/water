@@ -1,14 +1,17 @@
 #include <chrono>
 #include <iostream>
 #include <thread>
+#include <type_traits>
 #include <watcher.hpp>
 
 using namespace water;
 using namespace watcher;
 using namespace concepts;
 
-template <auto delay_ms = 0>
-auto stutter_print = [](const Path auto file, status s) {
+template <const auto delay_ms = 0>
+const auto stutter_print = [](const Path auto file,
+                        const status s) requires
+    std::is_integral_v<decltype(delay_ms)> {
   using status::created, status::modified, status::erased,
       std::endl, std::cout, std::this_thread::sleep_for,
       std::chrono::milliseconds;
