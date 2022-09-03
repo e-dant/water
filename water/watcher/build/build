@@ -10,7 +10,7 @@ build::build() {
   cc::init() {
     local ok;
     local llvm_dir="$thisdir/../../../tools/compilers/llvm"
-    if ! test "$CC -v" || ! test "$CXX -v"
+    if ! test -n "$CC" -a -n "$CXX"
     then
       if ! test -x "$llvm_dir/build/out/$llvm_version/bin/clang"
       then
