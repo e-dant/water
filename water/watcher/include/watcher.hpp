@@ -8,19 +8,32 @@
 
 namespace water {
 
-template <typename T>
-concept String = requires(T str) {
+template <typename From>
+concept String = requires(From str) {
   { str } -> std::convertible_to<std::string>;
 };
 
 template <typename From>
-concept Path = requires(From path) {
-  { path } -> String;
+concept Path = String<From>;
+
+template<typename Type, typename... Types>
+concept Same = std::is_same<Type, Types...>::value;
+
+template<typename... Types>
+concept Invocable = requires(Types... values) {
+  std::is_invocable<Types...>(values...)
+  or std::is_invocable_v<Types...>(values...)
+  or std::is_invocable_r_v<Types...>(values...);
 };
 
 template <typename Returns, typename... Accepts>
-concept Callback = requires(Returns fn) {
-  std::is_convertible_v<void, Returns>;
+concept Callback = requires(Returns fn, Accepts... args) {
+  // A callback doesn't return a value,
+  Same<void, Returns>
+  // takes one or more arguments,
+  and not Same<void, Accepts...>
+  // and is callable.
+  and Invocable<Returns, Accepts...>;
 };
 
 class watcher {
@@ -93,45 +106,47 @@ class watcher {
       // iterate through its contents
       for (const auto& file :
            recursive_directory_iterator(root)) {
-        auto ec = std::error_code{};
-        // grabbing the last write times
-        const auto current_file_last_write_time =
-            last_write_time(file, ec);
-        // and checking for errors...
-        if (ec) {
-          // uh oh! the file disappeared while we
-          // were (trying to) get a look at it.
-          // it's gone, that's ok,
-          // now let's call the closure
-          callback(file.path().string(), status::erased);
-          // and get it out of here
-          bucket.erase(file.path().string());
-        }
-        // checking if they're in our map
-        if (!bucket.contains(file.path().string())) {
-          // putting them there if not
-          bucket[file.path().string()] =
-              current_file_last_write_time;
-          // and calling the closure on them,
-          // indicating creation
-          callback(file.path().string(), status::created);
-        }
-        // if it is in our map
-        else {
-          // we update their last write times
-          if (bucket[file.path().string()] !=
-              current_file_last_write_time) {
+        if (is_regular_file(file)) {
+          auto ec = std::error_code{};
+          // grabbing the last write times
+          const auto current_file_last_write_time =
+              last_write_time(file, ec);
+          // and checking for errors...
+          if (ec) {
+            // uh oh! the file disappeared while we
+            // were (trying to) get a look at it.
+            // it's gone, that's ok,
+            // now let's call the closure
+            callback(file.path().string(), status::erased);
+            // and get it out of here
+            bucket.erase(file.path().string());
+          }
+          // checking if they're in our map
+          if (!bucket.contains(file.path().string())) {
+            // putting them there if not
             bucket[file.path().string()] =
                 current_file_last_write_time;
-            // and call the closure on them,
-            // indicating modification
-            callback(file.path().string(), status::modified);
+            // and calling the closure on them,
+            // indicating creation
+            callback(file.path().string(), status::created);
+          }
+          // if it is in our map
+          else {
+            // we update their last write times
+            if (bucket[file.path().string()] !=
+                current_file_last_write_time) {
+              bucket[file.path().string()] =
+                  current_file_last_write_time;
+              // and call the closure on them,
+              // indicating modification
+              callback(file.path().string(), status::modified);
+            }
           }
         }
       }
     }
     // if this thing is a file
-    else {
+    else if(is_regular_file(root)) {
       // grab the last write time
       const auto current_file_last_write_time =
           last_write_time(root);

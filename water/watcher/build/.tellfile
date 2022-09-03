@@ -3,4 +3,6 @@ echo watcher
  build tools and systems
 - given build
 echo ./build
+- given run
+echo out/water.watcher
 
