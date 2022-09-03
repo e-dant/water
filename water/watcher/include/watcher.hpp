@@ -88,14 +88,18 @@ void populate(const Path auto path = {"."}) {
 
   if (exists(path)) {
     if (is_directory(path)) {
-      for (const auto& file : dir_iter(path, dir_opt)) {
-        if (exists(file)) {
-          good_count++;
-          bucket[file.path().string()] =
-              last_write_time(file);
-        } else {
-          bad_count++;
+      try {
+        for (const auto& file : dir_iter(path, dir_opt)) {
+          if (exists(file)) {
+            good_count++;
+            bucket[file.path().string()] =
+                last_write_time(file);
+          } else {
+            bad_count++;
+          }
         }
+      } catch (const std::exception& e) {
+        bad_count++;
       }
     } else {
       good_count++;
@@ -145,12 +149,11 @@ void scan_file(const Path auto file,
                const Callback auto callback) {
   using namespace std::filesystem;
   if (exists(file) && is_regular_file(file)) {
-    auto ec_read = std::error_code{};
+    auto ec = std::error_code{};
     // grabbing the last write times
-    const auto current_file_last_write_time =
-        last_write_time(file, ec_read);
+    const auto timestamp = last_write_time(file, ec);
     // and checking for errors...
-    if (ec_read) {
+    if (ec) {
       // uh oh! the file disappeared while we
       // were (trying to) get a look at it.
       // it's gone, that's ok,
@@ -164,7 +167,7 @@ void scan_file(const Path auto file,
     // checking if they're in our map
     if (!bucket.contains(file)) {
       // putting them there if not
-      bucket[file] = current_file_last_write_time;
+      bucket[file] = timestamp;
       // and calling the closure on them,
       // indicating creation
       callback(file, status::created);
@@ -172,8 +175,8 @@ void scan_file(const Path auto file,
     // if it is in our map
     else {
       // we update their last write times
-      if (bucket[file] != current_file_last_write_time) {
-        bucket[file] = current_file_last_write_time;
+      if (bucket[file] != timestamp) {
+        bucket[file] = timestamp;
         // and call the closure on them,
         // indicating modification
         callback(file, status::modified);
@@ -200,16 +203,36 @@ void run(const Path auto path,
 
   if (exists(path)) {
     // if this thing is a directory
-    if (is_directory(path))
-      // iterate through its contents
-      for (const auto& file : dir_iter(path, dir_opt)) {
-        // scanning all the while
-        scan_file(file.path(), callback);
+    if (is_directory(path)) {
+      // trying to iterate through its contents
+      try {
+        for (const auto& file : dir_iter(path, dir_opt)) {
+          scan_file(file.path(), callback);
+        }
+      }  // and catching the error(s?)
+      catch (const std::exception& e) {
+        // @todo
+        // figure out how to grab the file the directory
+        // iterator was looking at and remove it from our
+        // bucket. maybe putting this try `block` inside of
+        // a `while` loop (instead of above a `for`).
+        //
+        // uh oh! the file disappeared while we
+        // were (trying to) get a look at it.
+        // it's gone, that's ok,
+        // now let's call the closure,
+        // indicating erasure,
+        //
+        // callback(file.path(), status::erased);
+        //// and get it out of the bucket.
+        // if (bucket.contains(file.path()))
+        //   bucket.erase(file.path());
       }
+    }
     // if this thing is a file
-    else if (is_regular_file(path))
-      // scan it alone
-      scan_file(path, callback);
+  } else if (is_regular_file(path)) {
+    // scan it alone
+    scan_file(path, callback);
   }
 }
 
