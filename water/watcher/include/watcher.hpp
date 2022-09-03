@@ -34,8 +34,9 @@ concept Callback = requires(Returns fn, Accepts... args) {
       // takes one or more arguments,
       and not Same<void, Accepts...>;
       // and is callable.
-      //and Invocable<Returns, Accepts...>;
+      and Invocable<Returns, Accepts...>;
 };
+
 }  // namespace concepts
 
 namespace watcher {
