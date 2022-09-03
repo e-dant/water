@@ -1,6 +1,4 @@
 #include <chrono>
-#include <iostream>
-#include <thread>
 #include <watcher.hpp>
 
 namespace literals {
