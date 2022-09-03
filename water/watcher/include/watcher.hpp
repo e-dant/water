@@ -32,7 +32,7 @@ concept Callback = requires(Returns fn, Accepts... args) {
   // A callback doesn't return a value,
   Same<void, Returns>
       // takes one or more arguments,
-      and not Same<void, Accepts...>;
+      and not Same<void, Accepts...>
       // and is callable.
       and Invocable<Returns, Accepts...>;
 };
