@@ -1,8 +1,0 @@
-Standard: c++20
-TabWidth: 8
-UseTab: Never
-BasedOnStyle: llvm
-ColumnLimit: 50
-BreakBeforeInheritanceComma: true
-BreakBeforeTernaryOperators: true
-BreakConstructorInitializers: BeforeColon

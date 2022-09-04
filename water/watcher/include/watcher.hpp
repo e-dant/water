@@ -22,9 +22,9 @@ concept Same = std::is_same<Type, Types...>::value;
 
 template <typename... Types>
 concept Invocable = requires(Types... values) {
-  std::is_invocable<Types...>(values...) or
-      std::is_invocable_v<Types...>(values...) or
-      std::is_invocable_r_v<Types...>(values...);
+  std::is_invocable<Types...>(values...)
+      or std::is_invocable_v<Types...>(values...)
+      or std::is_invocable_r_v<Types...>(values...);
 };
 
 template <typename Returns, typename... Accepts>
@@ -54,20 +54,23 @@ namespace {
 //  - directory_options
 //  - follow_directory_symlink
 //  - skip_permission_denied
-//  - bucket_t, a map of strings and times
+//  - bucket_t, a map of strings and
+//  times
 using dir_opt_t = std::filesystem::directory_options;
 using std::filesystem::directory_options::
     follow_directory_symlink;
 using std::filesystem::directory_options::
     skip_permission_denied;
-using bucket_t =
-    std::unordered_map<std::string,
-                       std::filesystem::file_time_type>;
+using bucket_t
+    = std::unordered_map<std::string,
+                         std::filesystem::file_time_type>;
 
-// we need these variables to make caching state easier
-// ... which is what objects are for, right?
-// well, maybe this should be an object, I'm not sure,
-// I just like functions is all.
+// we need these variables to make
+// caching state easier
+// ... which is what objects are for,
+// right? well, maybe this should be an
+// object, I'm not sure, I just like
+// functions is all.
 static constexpr dir_opt_t dir_opt  // NOLINT
     = skip_permission_denied & follow_directory_symlink;
 
@@ -81,10 +84,10 @@ static bucket_t bucket;  // NOLINT
  * given path. */
 void populate(const Path auto path = {"."}) {
   using namespace std::filesystem;
-  using dir_iter = recursive_directory_iterator;
+  using dir_iter  = recursive_directory_iterator;
 
   auto good_count = 1;
-  auto bad_count = 1;
+  auto bad_count  = 1;
 
   if (exists(path)) {
     if (is_directory(path)) {
@@ -92,8 +95,8 @@ void populate(const Path auto path = {"."}) {
         for (const auto& file : dir_iter(path, dir_opt)) {
           if (exists(file)) {
             good_count++;
-            bucket[file.path().string()] =
-                last_write_time(file);
+            bucket[file.path().string()]
+                = last_write_time(file);
           } else {
             bad_count++;
           }
@@ -149,15 +152,15 @@ bool scan_file(const Path auto file,
                const Callback auto callback) {
   using namespace std::filesystem;
   if (is_regular_file(file)) {
-    auto ec = std::error_code{};
+    auto ec              = std::error_code{};
     // grabbing the last write times
     const auto timestamp = last_write_time(file, ec);
     // and checking for errors...
     if (ec) {
-      // uh oh! the file disappeared while we
-      // were (trying to) get a look at it.
-      // it's gone, that's ok,
-      // now let's call the closure,
+      // uh oh! the file disappeared
+      // while we were (trying to) get a
+      // look at it. it's gone, that's
+      // ok, now let's call the closure,
       // indicating erasure,
       callback(file, status::erased);
       // and get it out of the bucket.
@@ -168,13 +171,14 @@ bool scan_file(const Path auto file,
     if (!bucket.contains(file)) {
       // putting them there if not
       bucket[file] = timestamp;
-      // and calling the closure on them,
-      // indicating creation
+      // and calling the closure on
+      // them, indicating creation
       callback(file, status::created);
     }
     // if it is in our map
     else {
-      // we update their last write times
+      // we update their last write
+      // times
       if (bucket[file] != timestamp) {
         bucket[file] = timestamp;
         // and call the closure on them,
@@ -194,7 +198,8 @@ bool scan_directory(const Path auto path,
 
   // if this thing is a directory
   if (is_directory(path)) {
-    // trying to iterate through its contents
+    // trying to iterate through its
+    // contents
     try {
       for (const auto& file : dir_iter(path, dir_opt)) {
         scan_file(file.path(), callback);
@@ -202,20 +207,25 @@ bool scan_directory(const Path auto path,
     }  // and catching the error(s?)
     catch (const std::exception& e) {
       // @todo
-      // figure out how to grab the file the directory
-      // iterator was looking at and remove it from our
-      // bucket. maybe putting this try `block` inside of
-      // a `while` loop (instead of above a `for`).
+      // figure out how to grab the file
+      // the directory iterator was
+      // looking at and remove it from
+      // our bucket. maybe putting this
+      // try `block` inside of a `while`
+      // loop (instead of above a
+      // `for`).
       //
-      // uh oh! the file disappeared while we
-      // were (trying to) get a look at it.
-      // it's gone, that's ok,
-      // now let's call the closure,
+      // uh oh! the file disappeared
+      // while we were (trying to) get a
+      // look at it. it's gone, that's
+      // ok, now let's call the closure,
       // indicating erasure,
       //
-      // callback(file.path(), status::erased);
+      // callback(file.path(),
+      // status::erased);
       //// and get it out of the bucket.
-      // if (bucket.contains(file.path()))
+      // if
+      // (bucket.contains(file.path()))
       //   bucket.erase(file.path());
     }
     return true;
@@ -225,17 +235,21 @@ bool scan_directory(const Path auto path,
 
 /* @briref watcher/scan
  * if this `path` is a directory,
- * scan recursively through its contents.
- * otherwise, this `path` is a file,
- * so scan it alone. */
+ * scan recursively through its
+ * contents. otherwise, this `path` is a
+ * file,å so scan it alone. */
 bool scan(const Path auto path,
           const Callback auto callback) {
   using namespace std::filesystem;
-  return exists(path) ? scan_directory(path, callback)
-                            ? true
-                        : scan_file(path, callback) ? true
-                                                    : false
-                      : false;
+  // clang-format off
+  return exists(path)
+         ? scan_directory(path, callback)
+           ? true
+           : scan_file(path, callback)
+             ? true
+             : false
+         : false;
+  // clang-format on
 }
 
 /* @brief watcher/run
@@ -247,10 +261,10 @@ bool scan(const Path auto path,
  * Executes the given closure when they
  * happen. */
 template <typename Before = decltype(populate("."))>
-void run(const Path auto path,
-         const Callback auto callback,
+void run(const Path auto path, const Callback auto callback,
          Before before) {
   before(path);
+
 water_watcher_run_top:
 
   // keep ourselves clean
@@ -262,29 +276,35 @@ water_watcher_run_top:
   goto water_watcher_run_top;  // lol
 }
 
-//// specialization for the default path,
-//// which is the current directory.
-// void run(const Callback auto callback) {
+//// specialization for the default
+/// path, / which is the current
+/// directory.
+// void run(const Callback auto
+// callback) {
 //   run(".", callback);
 // }
 
-//// specialization for the default callback,
-//// which prints what it finds to stdout.
+//// specialization for the default
+/// callback, / which prints what it
+/// finds to stdout.
 // template <auto delay_ms = 16>
-// void run(const Path auto path = ".") {
-//   run(path, [](const Path auto f, status s) {
+// void run(const Path auto path = ".")
+// {
+//   run(path, [](const Path auto f,
+//   status s) {
 //     switch (s) {
 //       case status::created:
-//         std::cout << "created: " << f << std::endl;
-//         break;
+//         std::cout << "created: " << f
+//         << std::endl; break;
 //       case status::modified:
-//         std::cout << "modified: " << f << std::endl;
-//         break;
+//         std::cout << "modified: " <<
+//         f << std::endl; break;
 //       case status::erased:
-//         std::cout << "erased: " << f << std::endl;
-//         break;
+//         std::cout << "erased: " << f
+//         << std::endl; break;
 //       default:
-//         std::cout << "unknown: " << f << std::endl;
+//         std::cout << "unknown: " << f
+//         << std::endl;
 //     }
 //     if constexpr (delay_ms > 0)
 //       std::this_thread::sleep_for(

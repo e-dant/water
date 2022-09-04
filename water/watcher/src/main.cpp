@@ -9,25 +9,29 @@ using namespace watcher;
 using namespace concepts;
 
 template <const auto delay_ms = 0>
-const auto stutter_print = [](const Path auto file,
-                              const status s) requires
+const auto stutter_print
+    = [](const Path auto file, const status s) requires
     std::is_integral_v<decltype(delay_ms)> {
   using status::created, status::modified, status::erased,
       std::endl, std::cout, std::this_thread::sleep_for,
       std::chrono::milliseconds;
 
+  const auto pf = [&file](const auto s) {
+    cout << s << ": " << file << endl;
+  };
+
   switch (s) {
     case created:
-      cout << "created: " << file << endl;
+      pf("created");
       break;
     case modified:
-      cout << "modified: " << file << endl;
+      pf("modified");
       break;
     case erased:
-      cout << "erased: " << file << endl;
+      pf("erased");
       break;
     default:
-      cout << "unknown: " << file << endl;
+      pf("unknown");
   }
 
   if constexpr (delay_ms > 0)
