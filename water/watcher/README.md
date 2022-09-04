@@ -1,5 +1,13 @@
 # Watcher
 
+This project is trivially easy to use, include,
+and run. (I hope.) This is a single-header,
+use-it-anywhere, pass-it-anything kind of library.
+
+If you don't want to use it in another project,
+don't worry, because it comes with one. Just build
+it and run and you've got yourself a filesystem
+watcher, which is pretty cool.
 
 ## Summary
 
@@ -7,6 +15,20 @@ The source code and build system for *Watcher*,
 an arbitrary path watcher.
 
 ## Usage
+
+There are only two functions that are important:
+  - `water::watcher::scan`
+  - `water::watcher::run`
+
+Each take a path, which is a string-like thing,
+and a callback, with is a function-like thing.
+
+So, passing them a string and a lambda would do
+nicely.
+
+The only difference between the `scan` and `run`
+is that `scan` runs once. `run` keeps on going,
+forever.
 
 ### Brief
 
@@ -107,10 +129,16 @@ int main(int argc, char** argv) {
 - `main.cpp`:
     Build this to use it as a CLI program.
 
-## Building & Running
+## Consume
 
-If you use the `tell` program,
-which is completely optional:
+### In Your Project
+
+Download the `watcher.hpp` file and include it in
+your project. That's all.
+
+### As A CLI Program
+
+#### Tell
 
 ```sh
 cd water/water/watcher
@@ -126,7 +154,7 @@ This will take care of:
   - linking the `compile_commands.json` file
     to this project's root.
 
-Otherwise, build it with `cmake`:
+#### CMake
 
 ```sh
 cd water/water/watcher/build
