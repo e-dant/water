@@ -145,10 +145,10 @@ void prune(const Callback auto callback) {
  * Scans a single file.
  * Updates the bucket.
  * Calls the callback. */
-void scan_file(const Path auto file,
+bool scan_file(const Path auto file,
                const Callback auto callback) {
   using namespace std::filesystem;
-  if (exists(file) && is_regular_file(file)) {
+  if (is_regular_file(file)) {
     auto ec = std::error_code{};
     // grabbing the last write times
     const auto timestamp = last_write_time(file, ec);
@@ -182,7 +182,60 @@ void scan_file(const Path auto file,
         callback(file, status::modified);
       }
     }
-  }
+    return true;
+  } else
+    return false;
+}
+
+bool scan_directory(const Path auto path,
+                    const Callback auto callback) {
+  using namespace std::filesystem;
+  using dir_iter = recursive_directory_iterator;
+
+  // if this thing is a directory
+  if (is_directory(path)) {
+    // trying to iterate through its contents
+    try {
+      for (const auto& file : dir_iter(path, dir_opt)) {
+        scan_file(file.path(), callback);
+      }
+    }  // and catching the error(s?)
+    catch (const std::exception& e) {
+      // @todo
+      // figure out how to grab the file the directory
+      // iterator was looking at and remove it from our
+      // bucket. maybe putting this try `block` inside of
+      // a `while` loop (instead of above a `for`).
+      //
+      // uh oh! the file disappeared while we
+      // were (trying to) get a look at it.
+      // it's gone, that's ok,
+      // now let's call the closure,
+      // indicating erasure,
+      //
+      // callback(file.path(), status::erased);
+      //// and get it out of the bucket.
+      // if (bucket.contains(file.path()))
+      //   bucket.erase(file.path());
+    }
+    return true;
+  } else
+    return false;
+}
+
+/* @briref watcher/scan
+ * if this `path` is a directory,
+ * scan recursively through its contents.
+ * otherwise, this `path` is a file,
+ * so scan it alone. */
+bool scan(const Path auto path,
+          const Callback auto callback) {
+  using namespace std::filesystem;
+  return exists(path) ? scan_directory(path, callback)
+                            ? true
+                        : scan_file(path, callback) ? true
+                                                    : false
+                      : false;
 }
 
 /* @brief watcher/run
@@ -193,78 +246,51 @@ void scan_file(const Path auto file,
  * Monitors `path_to_watch` for changes.
  * Executes the given closure when they
  * happen. */
+template <typename Before = decltype(populate("."))>
 void run(const Path auto path,
-         const Callback auto callback) {
-  using namespace std::filesystem;
-  using dir_iter = recursive_directory_iterator;
+         const Callback auto callback,
+         Before before) {
+  before(path);
+water_watcher_run_top:
 
   // keep ourselves clean
   prune(callback);
 
-  if (exists(path)) {
-    // if this thing is a directory
-    if (is_directory(path)) {
-      // trying to iterate through its contents
-      try {
-        for (const auto& file : dir_iter(path, dir_opt)) {
-          scan_file(file.path(), callback);
-        }
-      }  // and catching the error(s?)
-      catch (const std::exception& e) {
-        // @todo
-        // figure out how to grab the file the directory
-        // iterator was looking at and remove it from our
-        // bucket. maybe putting this try `block` inside of
-        // a `while` loop (instead of above a `for`).
-        //
-        // uh oh! the file disappeared while we
-        // were (trying to) get a look at it.
-        // it's gone, that's ok,
-        // now let's call the closure,
-        // indicating erasure,
-        //
-        // callback(file.path(), status::erased);
-        //// and get it out of the bucket.
-        // if (bucket.contains(file.path()))
-        //   bucket.erase(file.path());
-      }
-    }
-    // if this thing is a file
-  } else if (is_regular_file(path)) {
-    // scan it alone
-    scan_file(path, callback);
-  }
+  // and scan
+  scan(path, callback);
+
+  goto water_watcher_run_top;  // lol
 }
 
-// specialization for the default path,
-// which is the current directory.
-void run(const Callback auto callback) {
-  run(".", callback);
-}
+//// specialization for the default path,
+//// which is the current directory.
+// void run(const Callback auto callback) {
+//   run(".", callback);
+// }
 
-// specialization for the default callback,
-// which prints what it finds to stdout.
-template <auto delay_ms = 16>
-void run(const Path auto path = ".") {
-  run(path, [](const Path auto f, status s) {
-    switch (s) {
-      case status::created:
-        std::cout << "created: " << f << std::endl;
-        break;
-      case status::modified:
-        std::cout << "modified: " << f << std::endl;
-        break;
-      case status::erased:
-        std::cout << "erased: " << f << std::endl;
-        break;
-      default:
-        std::cout << "unknown: " << f << std::endl;
-    }
-    if constexpr (delay_ms > 0)
-      std::this_thread::sleep_for(
-          std::chrono::milliseconds(delay_ms));
-  });
-}
+//// specialization for the default callback,
+//// which prints what it finds to stdout.
+// template <auto delay_ms = 16>
+// void run(const Path auto path = ".") {
+//   run(path, [](const Path auto f, status s) {
+//     switch (s) {
+//       case status::created:
+//         std::cout << "created: " << f << std::endl;
+//         break;
+//       case status::modified:
+//         std::cout << "modified: " << f << std::endl;
+//         break;
+//       case status::erased:
+//         std::cout << "erased: " << f << std::endl;
+//         break;
+//       default:
+//         std::cout << "unknown: " << f << std::endl;
+//     }
+//     if constexpr (delay_ms > 0)
+//       std::this_thread::sleep_for(
+//           std::chrono::milliseconds(delay_ms));
+//   });
+// }
 
 }  // namespace watcher
 }  // namespace water

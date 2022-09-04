@@ -34,21 +34,13 @@ const auto stutter_print = [](const Path auto file,
     sleep_for(milliseconds(delay_ms));
 };
 
-void run_loop(const Path auto path) {
-  // Because I'm hoping that this is
-  // the first C++ program to use concepts
-  // and goto in the same (main) file
-top:
-  run(path, stutter_print<16>);
-  goto top;  // lol
-};
-
 int main(int argc, char** argv) {
   auto path = argc > 1 ? argv[1] : ".";
 
-  populate(path);
+  // populate(path);
 
-  run_loop(path);
+  run(path, stutter_print<16>,
+      [](const Path auto path) { populate(path); });
 
   // while (true)
   //   run(path, stutter_print<16>);
