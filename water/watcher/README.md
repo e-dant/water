@@ -6,7 +6,7 @@ use-it-anywhere, pass-it-anything kind of library.
 
 If you don't want to use it in another project,
 don't worry, because it comes with one. Just build
-it and run and you've got yourself a filesystem
+and run and you've got yourself a filesystem
 watcher, which is pretty cool.
 
 ## Summary
