@@ -10,7 +10,7 @@ an arbitrary path watcher.
 
 ### Brief
 
-```c++
+```cpp
 // at some point, call 'run'
 // with some millisecond delay,
 // it's template parameter.
@@ -22,7 +22,7 @@ water::watcher::run<16>(
   // that does whatever you'd like...
   [](
     const water::concepts::Path auto file,
-    const water::watcher::status s){
+    const water::watcher::status s) {
       const auto pf = [&file](const auto s) {
         std::cout << s << ": " << file << std::endl;
       };
@@ -45,7 +45,7 @@ water::watcher::run<16>(
 
 ### Long
 
-```c++
+```cpp
 #include <chrono>
 #include <iostream>
 #include <thread>
