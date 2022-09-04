@@ -11,14 +11,15 @@ an arbitrary path watcher.
 ### Brief
 
 ```cpp
-// at some point, call 'run'
+// at some point, create a 'run'
 // with some millisecond delay,
 // it's template parameter.
-// the default it 16 ms.
+// the default is 16 ms.
 water::watcher::run<16>(
-  // scan some path, forever...
+  // providing it with some path
+  // to scan, forever...
   ".",
-  // providing a callback
+  // providing it with a callback,
   // that does whatever you'd like...
   [](
     const water::concepts::Path auto file,
@@ -116,7 +117,7 @@ cd water/water/watcher
 `tell build`
 # watches the current directory
 `tell run`
-# watches some given path
+# watches some path
 # `tell run` 'your/favorite/path'
 ```
 
@@ -134,6 +135,6 @@ cmake --build out --config Release
 cd out
 # watches the current directory
 ./water.watcher
-# watches some given path
+# watches some path
 # ./water.watcher 'your/favorite/path'
 ```
