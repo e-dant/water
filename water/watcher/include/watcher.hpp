@@ -124,24 +124,36 @@ void populate(const Path auto path = {"."}) {
 /* @brief prune
  * Removes non-existent files
  * from our bucket. */
-void prune(const Callback auto callback) {
-  using namespace std::filesystem;
+auto prune(const Path auto path,
+           const Callback auto callback) {
+  using std::filesystem::exists;
+
   // first of all
   auto file = bucket.begin();
-  while (file != bucket.end()) {
-    // check if the stuff in our bucket
-    // exists anymore
-    if (!exists(file->first)) {
-      // if not, call the closure on it,
-      // indicating erasure
-      callback(file->first, status::erased);
-      // and get it out of here.
-      // bucket, erase it!
-      file = bucket.erase(file);
-    } else {
-      file++;
-    }
-  }
+  file == bucket.end()
+      // if the beginning is the end,
+      // try to populate the files
+      ? populate(path)
+      // otherwise, iterate over the
+      // bucket's contents
+      : [&]() {
+          while (file != bucket.end()) {
+            // check if the stuff in our bucket
+            // exists anymore
+            exists(file->first)
+                // if it does,
+                // move on to the next file
+                ? std::advance(file, 1)
+                // otherwise, call the closue on it,
+                // indicating erasure,
+                // and remove it from our bucket.
+                : [&]() {
+                    callback(file->first, status::erased);
+                    // bucket, erase it!
+                    file = bucket.erase(file);
+                  }();
+          }
+        }();
 }
 
 /* @brief scan_file
@@ -191,17 +203,17 @@ bool scan_file(const Path auto file,
     return false;
 }
 
-bool scan_directory(const Path auto path,
+bool scan_directory(const Path auto dir,
                     const Callback auto callback) {
   using namespace std::filesystem;
   using dir_iter = recursive_directory_iterator;
 
   // if this thing is a directory
-  if (is_directory(path)) {
+  if (is_directory(dir)) {
     // trying to iterate through its
     // contents
     try {
-      for (const auto& file : dir_iter(path, dir_opt)) {
+      for (const auto& file : dir_iter(dir, dir_opt)) {
         scan_file(file.path(), callback);
       }
     }  // and catching the error(s?)
@@ -241,7 +253,10 @@ bool scan_directory(const Path auto path,
 bool scan(const Path auto path,
           const Callback auto callback) {
   using namespace std::filesystem;
+  // keep ourselves clean
+  prune(path, callback);
   // clang-format off
+  // and scan, if the path exists.
   return exists(path)
          ? scan_directory(path, callback)
            ? true
@@ -260,57 +275,34 @@ bool scan(const Path auto path,
  * Monitors `path_to_watch` for changes.
  * Executes the given closure when they
  * happen. */
-template <typename Before = decltype(populate("."))>
-void run(const Path auto path, const Callback auto callback,
-         Before before) {
-  before(path);
+template <const auto delay_ms = 16>
+bool run(const Path auto path,
+         const Callback auto callback) requires
+    std::is_integral_v<decltype(delay_ms)> {
+  using std::this_thread::sleep_for,
+      std::chrono::milliseconds;
 
-water_watcher_run_top:
+  while (scan(path, callback))
+    if constexpr (delay_ms > 0)
+      sleep_for(milliseconds(delay_ms));
 
-  // keep ourselves clean
-  prune(callback);
+  return false;
 
-  // and scan
-  scan(path, callback);
+  /* @note
+  alternatively,
+  we could use this syntax:
 
-  goto water_watcher_run_top;  // lol
+    return scan(path, callback)
+               // if no errors present,
+               // keep running
+               ? run(path, callback)
+               // otherwise, leave
+               : false;
+
+  which may or may not be more clear.
+  i don't know.
+  */
 }
-
-//// specialization for the default
-/// path, / which is the current
-/// directory.
-// void run(const Callback auto
-// callback) {
-//   run(".", callback);
-// }
-
-//// specialization for the default
-/// callback, / which prints what it
-/// finds to stdout.
-// template <auto delay_ms = 16>
-// void run(const Path auto path = ".")
-// {
-//   run(path, [](const Path auto f,
-//   status s) {
-//     switch (s) {
-//       case status::created:
-//         std::cout << "created: " << f
-//         << std::endl; break;
-//       case status::modified:
-//         std::cout << "modified: " <<
-//         f << std::endl; break;
-//       case status::erased:
-//         std::cout << "erased: " << f
-//         << std::endl; break;
-//       default:
-//         std::cout << "unknown: " << f
-//         << std::endl;
-//     }
-//     if constexpr (delay_ms > 0)
-//       std::this_thread::sleep_for(
-//           std::chrono::milliseconds(delay_ms));
-//   });
-// }
 
 }  // namespace watcher
 }  // namespace water
