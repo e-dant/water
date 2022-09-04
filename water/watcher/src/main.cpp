@@ -1,35 +1,51 @@
 #include <chrono>
 #include <iostream>
 #include <thread>
+#include <type_traits>
 #include <watcher.hpp>
 
-int main() {
-  using namespace water;
-  // static constexpr const auto root = ".";
-  static constexpr const auto delay =
-      std::chrono::milliseconds(16);
+using namespace water;
+using namespace watcher;
+using namespace concepts;
 
-  auto w = watcher();
+const auto stutter_print
+    = [](const Path auto file, const status s)
+  {
 
-  while (true) {
-    w.run([&](std::string hit, watcher::status status) {
-      switch (status) {
-        case watcher::status::created:
-          std::cout << "created: " << hit << std::endl;
-          break;
-        case watcher::status::modified:
-          std::cout << "modified: " << hit << std::endl;
-          break;
-        case watcher::status::erased:
-          std::cout << "erased: " << hit << std::endl;
-          break;
-        default:
-          std::cout << "unknown: " << hit << std::endl;
-      }
-    });
+  using status::created, status::modified, status::erased,
+      std::endl, std::cout;
 
-    std::this_thread::sleep_for(delay);
+  const auto pf = [&file](const auto s) {
+    cout << s << ": " << file << endl;
+  };
+
+  switch (s) {
+    case created:
+      pf("created");
+      break;
+    case modified:
+      pf("modified");
+      break;
+    case erased:
+      pf("erased");
+      break;
+    default:
+      pf("unknown");
   }
+};
 
-  return 0;
+int main(int argc, char** argv) {
+  auto path = argc > 1
+                  // we have been given a path,
+                  // and we will use it
+                  ? argv[1]
+                  // otherwise, default to the
+                  // current directory
+                  : ".";
+  return run(
+      // scan the path, forever...
+      path,
+      // printing what we find,
+      // every 16 milliseconds.
+      stutter_print);
 }

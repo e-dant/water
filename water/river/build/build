@@ -5,12 +5,12 @@ build::build() {
   local lastdir="$PWD"
   cd "$(dirname "$0")"
   local thisdir="$PWD"
-  local llvm_version=15
+  local llvm_version=14
 
   cc::init() {
     local ok;
     local llvm_dir="$thisdir/../../../tools/compilers/llvm"
-    if test -z "$CC" || test -z "$CXX"
+    if ! test -n "$CC" -a -n "$CXX"
     then
       if ! test -x "$llvm_dir/build/out/$llvm_version/bin/clang"
       then
@@ -52,4 +52,3 @@ build::build() {
 build::build
 
 exit $?
-

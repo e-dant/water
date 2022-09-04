@@ -32,9 +32,31 @@ FetchContent_Declare(
   URL "https://github.com/aminya/project_options/archive/refs/tags/v0.24.0.zip"
   DOWNLOAD_EXTRACT_TIMESTAMP
 )
-FetchContent_MakeAvailable(_project_options)
+
+# [dependencies]
+#   [get]
+#     [boost]
+set(BOOST_ENABLE_CMAKE         ON)
+set(Boost_USE_MULTITHREADED    ON)
+set(Boost_USE_RELEASE_LIBS     ON)
+set(Boost_USE_STATIC_LIBS      ON)
+if(APPLE)
+  set(Boost_USE_STATIC_RUNTIME OFF)
+else()
+  set(Boost_USE_STATIC_RUNTIME ON)
+endif()
+FetchContent_Declare(
+  Boost
+  GIT_REPOSITORY "https://github.com/boostorg/boost.git"
+  GIT_TAG boost-1.80.0
+  DOWNLOAD_EXTRACT_TIMESTAMP
+)
+
+FetchContent_MakeAvailable(_project_options Boost)
+
 include("${_project_options_SOURCE_DIR}/Index.cmake")
 include("${_project_options_SOURCE_DIR}/src/DynamicProjectOptions.cmake")
+include("${Boost_SOURCE_DIR}/tools/boost_install/BoostConfig.cmake")
 
 # [vcpkg]
 #   - notes:
@@ -145,26 +167,15 @@ target_include_directories(
       ../../include/
 )
 
-# [dependencies]
-#   [get]
-#     [boost]
-set(Boost_USE_MULTITHREADED    ON)
-set(Boost_USE_RELEASE_LIBS     ON)
-set(Boost_USE_STATIC_LIBS      ON)
-if(APPLE)
-  set(Boost_USE_STATIC_RUNTIME OFF)
-else()
-  set(Boost_USE_STATIC_RUNTIME ON)
-endif()
-set(DEPENDENCIES_CONFIGURED Boost)
-foreach(DEPENDENCY ${DEPENDENCIES_CONFIGURED})
-  find_package(${DEPENDENCY}
-    CONFIG REQUIRED
-    COMPONENTS
-      headers
-      program_options
-  )
-endforeach()
+#set(DEPENDENCIES_CONFIGURED Boost)
+#foreach(DEPENDENCY ${DEPENDENCIES_CONFIGURED})
+  #  find_package(${DEPENDENCY}
+    #    CONFIG REQUIRED
+    #    COMPONENTS
+    #      headers
+      #      program_options
+      #  )
+#endforeach()
 
 # [dependencies]
 #   [get]

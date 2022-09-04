@@ -108,9 +108,13 @@ dynamic_project_options(
   ENABLE_CONAN
   ENABLE_PCH
   PCH_HEADERS
-  <iostream>
-  #<vector>
-  #<string>
+    <filesystem>
+    <functional>
+    <iostream>
+    <string>
+    <thread>
+    <unordered_map>
+    <chrono>
 )
 
 # [consumables]
