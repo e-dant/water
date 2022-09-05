@@ -10,3 +10,7 @@
 [submodule "tools/compilers/ghc/src"]
 	path = tools/compilers/ghc/src
 	url = https://github.com/ghc/ghc.git
+[submodule "water/watcher"]
+	path = water/watcher
+	url = https://github.com/e-dant/watcher.git
+	branch = release
