@@ -9,9 +9,11 @@
 [submodule "tools/instruments/valgrind/src"]
 	path = tools/instruments/valgrind/src
 	url = git://sourceware.org/git/valgrind.git
+  branch = VALGRIND_3_16_BRANCH
 [submodule "tools/compilers/ghc/src"]
 	path = tools/compilers/ghc/src
 	url = https://github.com/ghc/ghc.git
+  branch = ghc-9.4
 [submodule "water/watcher"]
 	path = water/watcher
 	url = https://github.com/e-dant/watcher.git
