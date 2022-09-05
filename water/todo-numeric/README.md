@@ -1,5 +1,0 @@
-# Number
-
-## Summary
-
-Numeric utilities.
