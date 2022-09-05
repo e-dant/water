@@ -8,6 +8,7 @@ tell_always=(
     'readme'
     'root'
     'shfn'
+    'smup'
     'where'
     'workspace'
   )

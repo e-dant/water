@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+tell::smup() {
+  echo 'git submodule update --init --force --remote && git submodule sync --recursive'
+}
