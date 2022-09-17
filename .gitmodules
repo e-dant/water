@@ -5,7 +5,7 @@
 [submodule "tools/compilers/llvm/src"]
   path = tools/compilers/llvm/src
   url = https://github.com/llvm/llvm-project.git
-  branch = release/13.x
+  branch = release/15.x
 [submodule "tools/instruments/valgrind/src"]
   path = tools/instruments/valgrind/src
   url = git://sourceware.org/git/valgrind.git
