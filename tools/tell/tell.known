@@ -9,6 +9,7 @@ tell_always=(
     'root'
     'shfn'
     'smup'
+    'whatchanged'
     'where'
     'workspace'
   )
