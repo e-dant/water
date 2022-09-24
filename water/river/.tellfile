@@ -1,6 +1,0 @@
-- given name
-echo river
-- given build
-echo build/build
-- given exe
-echo build/out/`tell workspace`.`tell name`
