@@ -3,7 +3,7 @@
 cd "$(dirname "$0")"
 
 thisdir="$PWD"
-tooldir="$thisdir/../tools"
+tooldir="$thisdir/../tool"
 version="$("$tooldir/version/get")"
 rootoutdir="$thisdir/out"
 outdir="$thisdir/out/$version"

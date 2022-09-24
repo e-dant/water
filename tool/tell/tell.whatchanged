@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+tell::whatchanged() {
+  local last_dir="$PWD"
+  cd "$(tell root)"
+  echo "$(\
+    while read line; do echo -n "$line, "; done \
+      <<< "$( \
+        git diff \
+          | grep -- '^diff --git' \
+          | sed -E 's|.* b/(.*$)|\1|g' \
+      )" \
+      | sed 's/, $//' \
+  )"
+  cd "$last_dir"
+}
