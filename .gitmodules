@@ -6,8 +6,8 @@
   path = tool/compilers/llvm/src
   url = https://github.com/llvm/llvm-project.git
   branch = release/15.x
-[submodule "tool/instruments/valgrind/src"]
-  path = tool/instruments/valgrind/src
+[submodule "tool/instrument/valgrind/src"]
+  path = tool/instrument/valgrind/src
   url = git://sourceware.org/git/valgrind.git
   branch = VALGRIND_3_16_BRANCH
 [submodule "tool/compilers/ghc/src"]
