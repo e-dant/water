@@ -2,6 +2,5 @@
 
 ## Summary
 
-Root directory for *tools*; useful toolkits for
-common programs.
+Root *tool* directory. Useful tools for common programs, such as compilers and organizers.
 
