@@ -1,17 +1,17 @@
-[submodule "tool/compilers/gcc/src"]
-  path = tool/compilers/gcc/src
+[submodule "tool/compiler/gcc/src"]
+  path = tool/compiler/gcc/src
   url = git://gcc.gnu.org/git/gcc.git
   branch = releases/gcc-12
-[submodule "tool/compilers/llvm/src"]
-  path = tool/compilers/llvm/src
+[submodule "tool/compiler/llvm/src"]
+  path = tool/compiler/llvm/src
   url = https://github.com/llvm/llvm-project.git
   branch = release/15.x
 [submodule "tool/instrument/valgrind/src"]
   path = tool/instrument/valgrind/src
   url = git://sourceware.org/git/valgrind.git
   branch = VALGRIND_3_16_BRANCH
-[submodule "tool/compilers/ghc/src"]
-  path = tool/compilers/ghc/src
+[submodule "tool/compiler/ghc/src"]
+  path = tool/compiler/ghc/src
   url = https://github.com/ghc/ghc.git
   branch = ghc-9.4
 [submodule "water/watcher"]
