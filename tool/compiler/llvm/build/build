@@ -25,8 +25,12 @@ cd "$outdir" || exit 1
 # for toolchain-style builds
 
 if cmake \
-  -DLLVM_ENABLE_PROJECTS='clang;clang-tools-extra;polly;libclc;libcxxabi;libcxx' \
+  -DLLVM_ENABLE_PROJECTS='clang;clang-tools-extra;polly' \
+  -DLLVM_ENABLE_RUNTIMES='compiler-rt;libc;libclc;libcxxabi;libcxx' \
   -DCMAKE_BUILD_TYPE='Release' \
+  -DLLVM_ENABLE_MODULES='ON' \
+  -DLLVM_ENABLE_EH='OFF' \
+  -DLLVM_ENABLE_LTO='ON' \
   -G 'Ninja' "$srcdir"; then
   if cmake --build "$outdir"; then
     exit 0
