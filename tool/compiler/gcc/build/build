@@ -12,7 +12,7 @@ cd $outdir || exit 1
 options='--enable-libstdcxx-allocator=__mt_alloc --enable-valgrind-annotations'
 
 if cd $srcdir; contrib/download_prerequisites; cd $outdir; then
-  if $srcdir/configure; then
+  if $srcdir/configure --disable-multilib; then
     if make; then
       exit 0
     else
